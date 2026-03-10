@@ -86,9 +86,11 @@ async function callWithRetry(requestFn, maxRetries = 3, delayMs = 800) {
 
 export default async function handler(req) {
   const origin = req.headers.get('origin') || '';
-  const allowedOrigins = [
-    'https://anita.app',
-    'http://localhost:3000',
+const allowedOrigins = [
+  'https://anita.app',
+  'http://localhost:3000',
+  'https://anita-topaz.vercel.app',
+
   ];
   const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
   const corsHeaders = {
