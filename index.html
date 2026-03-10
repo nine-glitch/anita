@@ -394,6 +394,88 @@
     transform: translateX(-50%) translateY(0);
   }
 
+
+  /* ── BÚSQUEDA ── */
+  .busqueda-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    color: var(--gris);
+    transition: color 0.2s ease;
+    font-size: 1rem;
+    line-height: 1;
+  }
+
+  .busqueda-toggle:hover {
+    color: var(--cobre);
+  }
+
+  .busqueda-area {
+    display: none;
+    margin-bottom: 2rem;
+    border-bottom: 1px solid var(--blanco-2);
+    padding-bottom: 0.5rem;
+  }
+
+  .busqueda-area.visible {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .busqueda-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+    color: var(--negro);
+    padding: 0.25rem 0;
+  }
+
+  .busqueda-input::placeholder {
+    color: var(--gris-claro);
+    font-style: normal;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.8rem;
+  }
+
+  .busqueda-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gris-claro);
+  }
+
+  .busqueda-cerrar {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--gris-claro);
+    font-size: 0.8rem;
+    padding: 0.25rem;
+  }
+
+  .resultado-busqueda {
+    display: none;
+    flex-direction: column;
+    gap: 2rem;
+    padding-bottom: 4rem;
+  }
+
+  .resultado-busqueda.visible {
+    display: flex;
+  }
+
+  .feed.oculto {
+    display: none;
+  }
+
+  .match-highlight {
+    background: var(--cobre-tenue);
+    border-radius: 2px;
+  }
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: var(--blanco); }
@@ -419,14 +501,28 @@
 <div id="app">
   <header>
     <div class="header-nombre">an<span>i</span>ta</div>
-    <div class="mood-icono" id="mood-icono">◈</div>
+    <div style="display:flex;align-items:center;gap:1rem">
+      <button class="busqueda-toggle" id="btn-busqueda" title="buscar" aria-label="buscar">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </button>
+      <div class="mood-icono" id="mood-icono">◈</div>
+    </div>
   </header>
+
+  <div class="busqueda-area" id="busqueda-area">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gris-claro);flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+    <input class="busqueda-input" id="busqueda-input" type="text" placeholder="buscar en tus entradas..." autocomplete="off">
+    <span class="busqueda-count" id="busqueda-count"></span>
+    <button class="busqueda-cerrar" id="busqueda-cerrar">✕</button>
+  </div>
+
+  <div class="resultado-busqueda" id="resultado-busqueda"></div>
 
   <div class="input-area">
     <label class="input-label" for="post-input">contale algo</label>
     <textarea
       id="post-input"
-      placeholder="lo que sea. un pensamiento, una confesión, lo que pasó hoy."
+      placeholder="lo que sea, un pensamiento, una confesión, lo que pasó hoy."
       maxlength="1000"
     ></textarea>
     <div class="input-footer">
@@ -772,6 +868,92 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/\n/g, '<br>');
 }
+
+// ── BÚSQUEDA ──
+const btnBusqueda = document.getElementById('btn-busqueda');
+const busquedaArea = document.getElementById('busqueda-area');
+const busquedaInput = document.getElementById('busqueda-input');
+const busquedaCerrar = document.getElementById('busqueda-cerrar');
+const busquedaCount = document.getElementById('busqueda-count');
+const resultadoBusqueda = document.getElementById('resultado-busqueda');
+const feedEl = document.getElementById('feed');
+
+btnBusqueda.addEventListener('click', () => {
+  busquedaArea.classList.add('visible');
+  busquedaInput.focus();
+});
+
+busquedaCerrar.addEventListener('click', cerrarBusqueda);
+
+busquedaInput.addEventListener('input', () => {
+  const q = busquedaInput.value.trim().toLowerCase();
+  if (!q) {
+    resultadoBusqueda.innerHTML = '';
+    resultadoBusqueda.classList.remove('visible');
+    feedEl.classList.remove('oculto');
+    busquedaCount.textContent = '';
+    return;
+  }
+  buscar(q);
+});
+
+busquedaInput.addEventListener('keydown', e => {
+  if (e.key === 'Escape') cerrarBusqueda();
+});
+
+function cerrarBusqueda() {
+  busquedaArea.classList.remove('visible');
+  busquedaInput.value = '';
+  resultadoBusqueda.innerHTML = '';
+  resultadoBusqueda.classList.remove('visible');
+  feedEl.classList.remove('oculto');
+  busquedaCount.textContent = '';
+}
+
+function buscar(q) {
+  const matches = estado.posts.filter(p =>
+    p.texto.toLowerCase().includes(q) || p.respuesta.toLowerCase().includes(q)
+  );
+
+  feedEl.classList.add('oculto');
+  resultadoBusqueda.innerHTML = '';
+
+  if (matches.length === 0) {
+    busquedaCount.textContent = '0 resultados';
+    resultadoBusqueda.classList.remove('visible');
+    return;
+  }
+
+  busquedaCount.textContent = `${matches.length} resultado${matches.length !== 1 ? 's' : ''}`;
+  resultadoBusqueda.classList.add('visible');
+
+  matches.reverse().forEach(p => {
+    const div = document.createElement('div');
+    div.className = 'entrada';
+
+    const fecha = p.fecha ? new Date(p.fecha).toLocaleDateString('es-PY', {
+      day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
+    }) : '';
+
+    div.innerHTML = `
+      <div class="entrada-meta">
+        <span class="entrada-fecha">${fecha}</span>
+      </div>
+      <div class="entrada-texto">${highlight(escapeHtml(p.texto), q)}</div>
+      <div class="respuesta-anita" style="animation:none">
+        <div class="anita-nombre">anita</div>
+        <div class="anita-texto">${highlight(escapeHtml(p.respuesta), q)}</div>
+      </div>
+    `;
+    resultadoBusqueda.appendChild(div);
+  });
+}
+
+function highlight(text, q) {
+  const regex = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+  return text.replace(regex, '<mark class="match-highlight">$1</mark>');
+}
+
 </script>
 </body>
 </html>
