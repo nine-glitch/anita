@@ -531,6 +531,205 @@ document.getElementById('btn-descargar').addEventListener('click', async () => {
   }
 
 
+
+  /* ── PRO / PAYWALL ── */
+  .banner-pro {
+    display: none;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: var(--negro-2);
+    color: var(--blanco);
+    padding: 0.75rem 1rem;
+    margin-bottom: 1.5rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.05em;
+  }
+
+  .banner-pro.visible {
+    display: flex;
+  }
+
+  .banner-pro a {
+    color: var(--cobre-claro);
+    text-decoration: none;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--cobre-tenue);
+    padding-bottom: 1px;
+    transition: color 0.2s;
+  }
+
+  .banner-pro a:hover {
+    color: var(--cobre);
+  }
+
+  .paywall-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(26, 18, 8, 0.85);
+    backdrop-filter: blur(4px);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+  }
+
+  .paywall-overlay.visible {
+    display: flex;
+  }
+
+  .paywall-box {
+    background: var(--blanco);
+    max-width: 380px;
+    width: 100%;
+    padding: 2.5rem;
+    text-align: center;
+  }
+
+  .paywall-nombre {
+    font-size: 2rem;
+    font-weight: 300;
+    font-style: italic;
+    color: var(--negro);
+    margin-bottom: 0.5rem;
+  }
+
+  .paywall-nombre span {
+    color: var(--cobre);
+  }
+
+  .paywall-texto {
+    font-size: 0.95rem;
+    color: var(--gris);
+    font-weight: 300;
+    margin-bottom: 0.5rem;
+    line-height: 1.6;
+  }
+
+  .paywall-precio {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--gris-claro);
+    margin-bottom: 2rem;
+    letter-spacing: 0.1em;
+  }
+
+  .paywall-btn {
+    display: block;
+    width: 100%;
+    background: var(--negro);
+    color: var(--blanco);
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.9rem;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background 0.2s;
+    margin-bottom: 0.75rem;
+  }
+
+  .paywall-btn:hover {
+    background: var(--cobre);
+  }
+
+  .paywall-codigo {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 1rem;
+  }
+
+  .paywall-codigo input {
+    flex: 1;
+    background: transparent;
+    border: 1px solid var(--blanco-2);
+    padding: 0.5rem 0.75rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--negro);
+    outline: none;
+  }
+
+  .paywall-codigo button {
+    background: none;
+    border: 1px solid var(--negro);
+    padding: 0.5rem 0.75rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    cursor: pointer;
+    color: var(--negro);
+    transition: all 0.2s;
+  }
+
+  .paywall-codigo button:hover {
+    background: var(--negro);
+    color: var(--blanco);
+  }
+
+  /* ── FOTO ── */
+  .foto-area {
+    display: none;
+    margin-top: 0.75rem;
+  }
+
+  .foto-area.visible {
+    display: block;
+  }
+
+  .foto-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gris);
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    text-transform: uppercase;
+    padding: 0.3rem 0;
+    transition: color 0.2s;
+  }
+
+  .foto-label:hover {
+    color: var(--cobre);
+  }
+
+  .foto-preview {
+    margin-top: 0.5rem;
+    position: relative;
+    display: inline-block;
+  }
+
+  .foto-preview img {
+    max-width: 120px;
+    max-height: 120px;
+    object-fit: cover;
+    border: 1px solid var(--blanco-2);
+  }
+
+  .foto-quitar {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--negro);
+    color: var(--blanco);
+    border: none;
+    width: 18px;
+    height: 18px;
+    font-size: 0.6rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #foto-input {
+    display: none;
+  }
   /* ── BÚSQUEDA ── */
   .busqueda-toggle {
     background: none;
@@ -653,6 +852,24 @@ document.getElementById('btn-descargar').addEventListener('click', async () => {
     </div>
   </header>
 
+  <div class="banner-pro" id="banner-pro">
+    <span>usaste <span id="contador-posts">0</span> de 30 entradas gratuitas.</span>
+    <a href="https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a" target="_blank">activar anita pro →</a>
+  </div>
+
+  <div class="paywall-overlay" id="paywall-overlay">
+    <div class="paywall-box">
+      <div class="paywall-nombre">an<span>i</span>ta</div>
+      <p class="paywall-texto">llegaste al límite gratuito.<br>anita pro incluye entradas ilimitadas y análisis de fotos.</p>
+      <p class="paywall-precio">$2.99 / mes</p>
+      <a class="paywall-btn" href="https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a" target="_blank">suscribirse</a>
+      <div class="paywall-codigo">
+        <input type="text" id="codigo-pro" placeholder="código de activación" autocomplete="off">
+        <button id="btn-codigo">activar</button>
+      </div>
+    </div>
+  </div>
+
   <div class="busqueda-area" id="busqueda-area">
     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--gris-claro);flex-shrink:0"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
     <input class="busqueda-input" id="busqueda-input" type="text" placeholder="buscar en tus entradas..." autocomplete="off">
@@ -669,7 +886,19 @@ document.getElementById('btn-descargar').addEventListener('click', async () => {
       placeholder="lo que sea, un pensamiento, una confesión, lo que pasó hoy."
       maxlength="1000"
     ></textarea>
-    <div class="input-footer">
+    <div class="foto-area" id="foto-area">
+    <label class="foto-label" for="foto-input">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+      agregar foto
+    </label>
+    <input type="file" id="foto-input" accept="image/*">
+    <div class="foto-preview" id="foto-preview" style="display:none">
+      <img id="foto-img" src="" alt="preview">
+      <button class="foto-quitar" id="foto-quitar">✕</button>
+    </div>
+  </div>
+
+  <div class="input-footer">
       <span class="char-count" id="char-count">0 / 1000</span>
       <button class="enviar" id="btn-enviar" disabled>enviar</button>
     </div>
@@ -686,12 +915,21 @@ document.getElementById('btn-descargar').addEventListener('click', async () => {
 
 <script>
 // ── ESTADO ──
+const LIMITE_FREE = 30;
+const LEMON_URL = 'https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a';
+
 const estado = {
   posts: [],
   cargando: false,
   moodCiclo: ['◈', '◌', '◆', '◇'],
   moodIndex: 0,
-  userId: crypto.randomUUID()
+  userId: (() => {
+    let id = localStorage.getItem('anita-uid');
+    if (!id) { id = crypto.randomUUID(); localStorage.setItem('anita-uid', id); }
+    return id;
+  })(),
+  pro: localStorage.getItem('anita-pro') === 'true',
+  totalPosts: parseInt(localStorage.getItem('anita-total') || '0')
 };
 
 const SYSTEM_PROMPT = `Sos Anita. Una mujer. No una terapeuta, no una coach, no una IA que finge ser humana. Sos algo más raro: una presencia que escucha con atención brutal y responde con lo que ve, no con lo que la persona quiere oír.
@@ -743,6 +981,7 @@ window.addEventListener('load', () => {
 
   rotateMood();
   setInterval(rotateMood, 8000);
+  actualizarEstadoPro();
 });
 
 function rotateMood() {
@@ -778,6 +1017,12 @@ btnEnviar.addEventListener('click', enviar);
 async function enviar() {
   const texto = textarea.value.trim();
   if (!texto || estado.cargando) return;
+
+  // Verificar límite free
+  if (!estado.pro && estado.totalPosts >= LIMITE_FREE) {
+    mostrarPaywall();
+    return;
+  }
 
   estado.cargando = true;
   btnEnviar.disabled = true;
@@ -823,7 +1068,13 @@ async function enviar() {
         model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content: userMsg }]
+        messages: [{
+          role: 'user',
+          content: fotoBase64 ? [
+            { type: 'image', source: { type: 'base64', media_type: fotoMediaType, data: fotoBase64 } },
+            { type: 'text', text: userMsg }
+          ] : userMsg
+        }]
       })
     });
 
@@ -850,6 +1101,16 @@ async function enviar() {
 
     // Guardar en estado
     estado.posts.push({ texto, respuesta: parsed.respuesta, fecha: new Date() });
+    estado.totalPosts++;
+    localStorage.setItem('anita-total', estado.totalPosts.toString());
+    actualizarEstadoPro();
+
+    // Limpiar foto
+    fotoBase64 = null;
+    fotoMediaType = null;
+    fotoInput.value = '';
+    fotoPreview.style.display = 'none';
+    fotoImg.src = '';
 
     // Pedir permiso push después de la primera respuesta
     if (estado.posts.length === 1) {
@@ -1012,6 +1273,75 @@ function escapeHtml(str) {
     .replace(/"/g, '&quot;')
     .replace(/\n/g, '<br>');
 }
+
+
+// ── PRO / PAYWALL ──
+function actualizarEstadoPro() {
+  const total = estado.totalPosts;
+  const contadorEl = document.getElementById('contador-posts');
+  if (contadorEl) contadorEl.textContent = total;
+
+  if (estado.pro) {
+    document.getElementById('banner-pro').classList.remove('visible');
+    document.getElementById('foto-area').classList.add('visible');
+    return;
+  }
+
+  // Mostrar banner cuando queden 5 o menos
+  if (total >= 25 && total < LIMITE_FREE) {
+    document.getElementById('banner-pro').classList.add('visible');
+  }
+}
+
+function mostrarPaywall() {
+  document.getElementById('paywall-overlay').classList.add('visible');
+}
+
+// Código de activación manual
+document.getElementById('btn-codigo').addEventListener('click', () => {
+  const codigo = document.getElementById('codigo-pro').value.trim().toUpperCase();
+  const CODIGOS_VALIDOS = ['ANITA2025', 'PROLAURA', 'AMIGA']; // cambiá estos
+  if (CODIGOS_VALIDOS.includes(codigo)) {
+    estado.pro = true;
+    localStorage.setItem('anita-pro', 'true');
+    document.getElementById('paywall-overlay').classList.remove('visible');
+    actualizarEstadoPro();
+    mostrarToast('anita pro activada.');
+    setTimeout(ocultarToast, 2500);
+  } else {
+    mostrarToast('código inválido.');
+    setTimeout(ocultarToast, 2500);
+  }
+});
+
+// Foto
+const fotoInput = document.getElementById('foto-input');
+const fotoPreview = document.getElementById('foto-preview');
+const fotoImg = document.getElementById('foto-img');
+let fotoBase64 = null;
+let fotoMediaType = null;
+
+fotoInput.addEventListener('change', () => {
+  const file = fotoInput.files[0];
+  if (!file) return;
+
+  fotoMediaType = file.type || 'image/jpeg';
+  const reader = new FileReader();
+  reader.onload = e => {
+    fotoBase64 = e.target.result.split(',')[1];
+    fotoImg.src = e.target.result;
+    fotoPreview.style.display = 'inline-block';
+  };
+  reader.readAsDataURL(file);
+});
+
+document.getElementById('foto-quitar').addEventListener('click', () => {
+  fotoBase64 = null;
+  fotoMediaType = null;
+  fotoInput.value = '';
+  fotoPreview.style.display = 'none';
+  fotoImg.src = '';
+});
 
 // ── BÚSQUEDA ──
 const btnBusqueda = document.getElementById('btn-busqueda');
