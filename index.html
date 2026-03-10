@@ -135,23 +135,31 @@
   textarea {
     width: 100%;
     min-height: 120px;
-    background: transparent;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent calc(1.8em - 1px),
+      var(--blanco-2) calc(1.8em - 1px),
+      var(--blanco-2) 1.8em
+    );
     border: none;
     border-bottom: 1px solid var(--blanco-2);
-    padding: 0.75rem 0;
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 1.1rem;
+    padding: 0.1rem 0;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
     font-weight: 300;
     color: var(--negro);
     resize: none;
     outline: none;
     transition: border-color 0.3s ease;
-    line-height: 1.7;
+    line-height: 1.8em;
   }
 
   textarea::placeholder {
     color: var(--gris-claro);
     font-style: italic;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1rem;
   }
 
   textarea:focus {
@@ -243,14 +251,21 @@
   }
 
   .entrada-texto {
-    font-size: 1.05rem;
-    font-weight: 400;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.82rem;
+    font-weight: 300;
     color: var(--negro);
-    line-height: 1.7;
-    padding-bottom: 1.25rem;
+    line-height: 1.8em;
+    padding: 0.5rem 0 1.25rem;
     border-bottom: 1px solid var(--blanco-2);
     margin-bottom: 1.25rem;
-    font-style: italic;
+    background: repeating-linear-gradient(
+      to bottom,
+      transparent,
+      transparent calc(1.8em - 1px),
+      var(--blanco-2) calc(1.8em - 1px),
+      var(--blanco-2) 1.8em
+    );
   }
 
   /* ── RESPUESTA ANITA ── */
