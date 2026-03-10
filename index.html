@@ -666,8 +666,6 @@ function crearRespuesta(parsed) {
     html += `<div class="anita-hook">${escapeHtml(parsed.hook)}</div>`;
   }
 
-  html += `<span class="anita-tono">${parsed.tono || ''}</span>`;
-
   div.innerHTML = html;
   return div;
 }
