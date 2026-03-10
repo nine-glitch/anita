@@ -90,8 +90,7 @@ const allowedOrigins = [
   'https://anita.app',
   'http://localhost:3000',
   'https://anita-topaz.vercel.app',
-
-  ];
+];
   const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
   const corsHeaders = {
     'Access-Control-Allow-Origin': corsOrigin,
