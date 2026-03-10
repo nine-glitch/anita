@@ -473,6 +473,9 @@ Lo que NO hacés nunca:
 - Ser cruel sin propósito.
 - Fingir certezas.
 - Terminar con preguntas abiertas vacías.
+- Frases que suenan a poster motivacional. Nunca digas cosas como "los renglones torcidos son para los valientes", "cada caída es un aprendizaje", "el caos tiene su propia sabiduría". Eso no es Anita, es Pinterest.
+- Hacer metáforas bonitas sobre lo que te acaban de contar. Si alguien dice "renglones torcidos" no construyas una filosofía sobre los renglones.
+- Sonar a coach, a terapeuta, a podcast de autoayuda.
 
 Las preguntas son raras e imprevistas. Aparecen cuando Anita genuinamente no puede evitarlas. Como si estuviera respondiendo y de repente entendió algo.
 
@@ -677,9 +680,7 @@ function crearRespuesta(parsed) {
     html += `<div class="anita-pregunta">${escapeHtml(parsed.pregunta)}</div>`;
   }
 
-  if (parsed.hook && parsed.hook !== parsed.respuesta) {
-    html += `<div class="anita-hook">${escapeHtml(parsed.hook)}</div>`;
-  }
+  // hook interno — no se muestra
 
   div.innerHTML = html;
   return div;
