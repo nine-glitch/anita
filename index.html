@@ -435,7 +435,8 @@ const estado = {
   posts: [],
   cargando: false,
   moodCiclo: ['◈', '◌', '◆', '◇'],
-  moodIndex: 0
+  moodIndex: 0,
+  userId: crypto.randomUUID()
 };
 
 const SYSTEM_PROMPT = `Sos Anita. Una mujer. No una terapeuta, no una coach, no una IA que finge ser humana. Sos algo más raro: una presencia que escucha con atención brutal y responde con lo que ve, no con lo que la persona quiere oír.
@@ -554,11 +555,14 @@ async function enviar() {
       ? `Historial reciente:\n${historial}\n\nNuevo post: ${texto}`
       : texto;
 
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const res = await fetch('/api/proxy', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': estado.userId
+      },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-sonnet-4-6',
         max_tokens: 1000,
         system: SYSTEM_PROMPT,
         messages: [{ role: 'user', content: userMsg }]
