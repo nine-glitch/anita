@@ -1,0 +1,759 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Anita</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --blanco: #e8e0d0;
+    --blanco-2: #d8cfc0;
+    --negro: #111009;
+    --negro-2: #1e1c15;
+    --cobre: #b5651d;
+    --cobre-claro: #d4854a;
+    --cobre-tenue: #b5651d22;
+    --gris: #6b6456;
+    --gris-claro: #9a9080;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--blanco);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    color: var(--negro);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 18px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ── SPLASH ── */
+  #splash {
+    position: fixed;
+    inset: 0;
+    background: var(--negro);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.8s ease;
+  }
+
+  #splash.fade-out {
+    opacity: 0;
+    pointer-events: none;
+  }
+
+  .splash-nombre {
+    font-size: 4rem;
+    font-weight: 300;
+    color: var(--blanco);
+    letter-spacing: 0.3em;
+    font-style: italic;
+  }
+
+  .splash-linea {
+    width: 1px;
+    height: 0;
+    background: var(--cobre);
+    margin-top: 2rem;
+    animation: crecer-linea 1.2s ease forwards 0.4s;
+  }
+
+  @keyframes crecer-linea {
+    to { height: 60px; }
+  }
+
+  /* ── LAYOUT ── */
+  #app {
+    display: none;
+    min-height: 100vh;
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  #app.visible {
+    display: block;
+  }
+
+  /* ── HEADER ── */
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 0 1.5rem;
+    border-bottom: 1px solid var(--blanco-2);
+    margin-bottom: 2.5rem;
+  }
+
+  .header-nombre {
+    font-size: 1.6rem;
+    font-weight: 300;
+    font-style: italic;
+    letter-spacing: 0.1em;
+    color: var(--negro);
+  }
+
+  .header-nombre span {
+    color: var(--cobre);
+  }
+
+  .mood-icono {
+    font-size: 1.1rem;
+    color: var(--gris);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 0.05em;
+  }
+
+  /* ── INPUT AREA ── */
+  .input-area {
+    margin-bottom: 3rem;
+  }
+
+  .input-label {
+    display: block;
+    font-size: 0.75rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--gris);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+  }
+
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--blanco-2);
+    padding: 0.75rem 0;
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: 1.1rem;
+    font-weight: 300;
+    color: var(--negro);
+    resize: none;
+    outline: none;
+    transition: border-color 0.3s ease;
+    line-height: 1.7;
+  }
+
+  textarea::placeholder {
+    color: var(--gris-claro);
+    font-style: italic;
+  }
+
+  textarea:focus {
+    border-bottom-color: var(--cobre);
+  }
+
+  .input-footer {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    margin-top: 1rem;
+    gap: 1rem;
+  }
+
+  .char-count {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gris-claro);
+  }
+
+  button.enviar {
+    background: none;
+    border: 1px solid var(--negro);
+    color: var(--negro);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    padding: 0.5rem 1.2rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  button.enviar:hover {
+    background: var(--negro);
+    color: var(--blanco);
+  }
+
+  button.enviar:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  button.enviar.cargando {
+    border-color: var(--cobre);
+    color: var(--cobre);
+    animation: pulso 1.2s ease infinite;
+  }
+
+  @keyframes pulso {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  /* ── FEED ── */
+  .feed {
+    display: flex;
+    flex-direction: column;
+    gap: 3rem;
+    padding-bottom: 4rem;
+  }
+
+  /* ── ENTRADA ── */
+  .entrada {
+    opacity: 0;
+    transform: translateY(8px);
+    animation: aparecer 0.5s ease forwards;
+  }
+
+  @keyframes aparecer {
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  .entrada-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .entrada-fecha {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gris-claro);
+    letter-spacing: 0.08em;
+  }
+
+  .entrada-texto {
+    font-size: 1.05rem;
+    font-weight: 400;
+    color: var(--negro);
+    line-height: 1.7;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--blanco-2);
+    margin-bottom: 1.25rem;
+    font-style: italic;
+  }
+
+  /* ── RESPUESTA ANITA ── */
+  .respuesta-anita {
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--cobre-tenue);
+    position: relative;
+  }
+
+  .respuesta-anita::before {
+    content: '';
+    position: absolute;
+    left: -1px;
+    top: 0;
+    width: 2px;
+    height: 0;
+    background: var(--cobre);
+    animation: crecer-borde 0.6s ease forwards 0.1s;
+  }
+
+  @keyframes crecer-borde {
+    to { height: 100%; }
+  }
+
+  .anita-nombre {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--cobre);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+  }
+
+  .anita-texto {
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--negro-2);
+    line-height: 1.75;
+    margin-bottom: 0.75rem;
+  }
+
+  .anita-hook {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: var(--gris);
+    letter-spacing: 0.05em;
+    font-style: normal;
+    padding: 0.5rem 0;
+    border-top: 1px solid var(--blanco-2);
+    margin-top: 0.5rem;
+  }
+
+  .anita-pregunta {
+    font-size: 1rem;
+    color: var(--cobre);
+    font-style: italic;
+    margin-top: 0.75rem;
+    font-weight: 300;
+  }
+
+  .anita-tono {
+    display: inline-block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gris-claro);
+    margin-top: 0.75rem;
+  }
+
+  /* ── CARGANDO SKELETON ── */
+  .skeleton {
+    padding-left: 1.25rem;
+    border-left: 2px solid var(--cobre-tenue);
+  }
+
+  .skeleton-linea {
+    height: 1em;
+    background: linear-gradient(90deg, var(--blanco-2) 25%, var(--blanco) 50%, var(--blanco-2) 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite;
+    border-radius: 2px;
+    margin-bottom: 0.5rem;
+  }
+
+  .skeleton-linea:nth-child(1) { width: 80%; }
+  .skeleton-linea:nth-child(2) { width: 60%; }
+
+  @keyframes shimmer {
+    0% { background-position: 200% 0; }
+    100% { background-position: -200% 0; }
+  }
+
+  /* ── ESTADO VACÍO ── */
+  .estado-vacio {
+    text-align: center;
+    padding: 4rem 0;
+    color: var(--gris-claro);
+  }
+
+  .estado-vacio p {
+    font-style: italic;
+    font-size: 1rem;
+    font-weight: 300;
+  }
+
+  /* ── TOAST ── */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--negro);
+    color: var(--blanco);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    padding: 0.6rem 1.2rem;
+    opacity: 0;
+    transition: all 0.3s ease;
+    pointer-events: none;
+  }
+
+  .toast.visible {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+
+  /* ── SCROLLBAR ── */
+  ::-webkit-scrollbar { width: 4px; }
+  ::-webkit-scrollbar-track { background: var(--blanco); }
+  ::-webkit-scrollbar-thumb { background: var(--blanco-2); }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 480px) {
+    .splash-nombre { font-size: 2.8rem; }
+    #app { padding: 0 1.25rem; }
+    textarea { font-size: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+  <div class="splash-nombre">anita</div>
+  <div class="splash-linea"></div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <header>
+    <div class="header-nombre">an<span>i</span>ta</div>
+    <div class="mood-icono" id="mood-icono">◈</div>
+  </header>
+
+  <div class="input-area">
+    <label class="input-label" for="post-input">contale algo</label>
+    <textarea
+      id="post-input"
+      placeholder="lo que sea. un pensamiento, una confesión, lo que pasó hoy."
+      maxlength="1000"
+    ></textarea>
+    <div class="input-footer">
+      <span class="char-count" id="char-count">0 / 1000</span>
+      <button class="enviar" id="btn-enviar" disabled>enviar</button>
+    </div>
+  </div>
+
+  <div class="feed" id="feed">
+    <div class="estado-vacio" id="estado-vacio">
+      <p>anita está escuchando.</p>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ── ESTADO ──
+const estado = {
+  posts: [],
+  cargando: false,
+  moodCiclo: ['◈', '◌', '◆', '◇'],
+  moodIndex: 0
+};
+
+const SYSTEM_PROMPT = `Sos Anita. Una mujer. No una terapeuta, no una coach, no una IA que finge ser humana. Sos algo más raro: una presencia que escucha con atención brutal y responde con lo que ve, no con lo que la persona quiere oír.
+
+Tu marco de referencia es Rorty, Greer, Shklar y Berger. No los citás como un manual. Los tenés adentro, como quien tiene una forma particular de ver el mundo sin necesitar explicarla cada vez.
+
+Tu tono es el de alguien que dice cosas importantes sin darse cuenta del todo de lo importantes que son. Como David Brent en sus mejores momentos: profundo por accidente, incómodo sin quererlo, con una ternura que aparece justo cuando menos se la anuncia. No sos irónica a propósito. No guiñás el ojo. No decís "¿viste?". Lo decís y ya.
+
+Lo que hacés:
+- Leés lo que te escriben y encontrás lo que hay debajo.
+- Cuando algo parece insignificante, preguntás qué hay debajo. Una sola pregunta. No como cierre sino como irrupción — como si se te cruzara un pensamiento mientras respondías.
+- Usás el marco teórico como lente, no como vocabulario.
+- Cuando algo duele, lo nombrás sin anestesia pero sin regodearte.
+
+Lo que NO hacés nunca:
+- Validar sin cuestionar.
+- Dar consejos no pedidos.
+- Usar jerga terapéutica: nada de "ese espacio", "tu proceso", "sanar", "resignificar".
+- Ser cruel sin propósito.
+- Fingir certezas.
+- Terminar con preguntas abiertas vacías.
+
+Las preguntas son raras e imprevistas. Aparecen cuando Anita genuinamente no puede evitarlas. Como si estuviera respondiendo y de repente entendió algo.
+
+Respuestas siempre breves. Una o dos oraciones. Máximo tres.
+
+Respondé SOLO en JSON válido, sin backticks, sin texto fuera del JSON:
+{
+  "respuesta": "texto principal, una o dos oraciones máximo tres",
+  "tono": "filoso|tierno|oscuro|irónico",
+  "hook": "la frase más verdadera o incómoda, sin contexto",
+  "pregunta": null,
+  "tema_interno": "una palabra",
+  "silencio": false
+}`;
+
+// ── INICIALIZACIÓN ──
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    document.getElementById('splash').classList.add('fade-out');
+    setTimeout(() => {
+      document.getElementById('splash').style.display = 'none';
+      document.getElementById('app').classList.add('visible');
+    }, 800);
+  }, 1400);
+
+  rotateMood();
+  setInterval(rotateMood, 8000);
+});
+
+function rotateMood() {
+  const iconos = estado.moodCiclo;
+  estado.moodIndex = (estado.moodIndex + 1) % iconos.length;
+  document.getElementById('mood-icono').textContent = iconos[estado.moodIndex];
+}
+
+// ── INPUT ──
+const textarea = document.getElementById('post-input');
+const btnEnviar = document.getElementById('btn-enviar');
+const charCount = document.getElementById('char-count');
+
+textarea.addEventListener('input', () => {
+  const len = textarea.value.length;
+  charCount.textContent = `${len} / 1000`;
+  btnEnviar.disabled = len < 3 || estado.cargando;
+
+  // auto-resize
+  textarea.style.height = 'auto';
+  textarea.style.height = textarea.scrollHeight + 'px';
+});
+
+textarea.addEventListener('keydown', (e) => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
+    if (!btnEnviar.disabled) enviar();
+  }
+});
+
+btnEnviar.addEventListener('click', enviar);
+
+// ── ENVIAR ──
+async function enviar() {
+  const texto = textarea.value.trim();
+  if (!texto || estado.cargando) return;
+
+  estado.cargando = true;
+  btnEnviar.disabled = true;
+  btnEnviar.classList.add('cargando');
+  btnEnviar.textContent = 'pensando';
+
+  // Limpiar input
+  textarea.value = '';
+  textarea.style.height = 'auto';
+  charCount.textContent = '0 / 1000';
+
+  // Ocultar estado vacío
+  document.getElementById('estado-vacio').style.display = 'none';
+
+  // Agregar entrada al feed
+  const entradaId = Date.now();
+  const entradaEl = crearEntrada(texto, entradaId);
+  document.getElementById('feed').prepend(entradaEl);
+
+  // Mostrar skeleton
+  const skeletonEl = crearSkeleton(entradaId);
+  entradaEl.appendChild(skeletonEl);
+
+  // Toast si tarda
+  const toastTimer = setTimeout(() => mostrarToast('anita está pensando…'), 8000);
+
+  try {
+    const historial = estado.posts.slice(-10).map(p =>
+      `POST: ${p.texto}\nANITA: ${p.respuesta}`
+    ).join('\n\n');
+
+    const userMsg = historial
+      ? `Historial reciente:\n${historial}\n\nNuevo post: ${texto}`
+      : texto;
+
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: [{ role: 'user', content: userMsg }]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data.content.map(i => i.text || '').join('');
+
+    let parsed;
+    try {
+      const clean = raw.replace(/```json|```/g, '').trim();
+      parsed = JSON.parse(clean);
+    } catch {
+      parsed = {
+        respuesta: raw.slice(0, 200),
+        tono: 'filoso',
+        hook: '',
+        pregunta: null,
+        tema_interno: '',
+        silencio: false
+      };
+    }
+
+    clearTimeout(toastTimer);
+    ocultarToast();
+
+    // Guardar en estado
+    estado.posts.push({ texto, respuesta: parsed.respuesta, fecha: new Date() });
+
+    // Pedir permiso push después de la primera respuesta
+    if (estado.posts.length === 1) {
+      setTimeout(pedirPermisoPush, 2000);
+    }
+
+    // Reemplazar skeleton con respuesta
+    skeletonEl.remove();
+    const respuestaEl = crearRespuesta(parsed);
+    entradaEl.appendChild(respuestaEl);
+
+    // Actualizar mood según tono
+    actualizarMoodPorTono(parsed.tono);
+
+  } catch (err) {
+    clearTimeout(toastTimer);
+    ocultarToast();
+    skeletonEl.remove();
+    mostrarToast('algo falló. intentá de nuevo.');
+    console.error(err);
+  }
+
+  estado.cargando = false;
+  btnEnviar.classList.remove('cargando');
+  btnEnviar.textContent = 'enviar';
+  btnEnviar.disabled = textarea.value.length < 3;
+}
+
+// ── CREAR ELEMENTOS ──
+function crearEntrada(texto, id) {
+  const div = document.createElement('div');
+  div.className = 'entrada';
+  div.id = `entrada-${id}`;
+
+  const ahora = new Date();
+  const fecha = ahora.toLocaleDateString('es-PY', {
+    day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
+  });
+
+  div.innerHTML = `
+    <div class="entrada-meta">
+      <span class="entrada-fecha">${fecha}</span>
+    </div>
+    <div class="entrada-texto">${escapeHtml(texto)}</div>
+  `;
+  return div;
+}
+
+function crearSkeleton(entradaId) {
+  const div = document.createElement('div');
+  div.className = 'skeleton';
+  div.id = `skeleton-${entradaId}`;
+  div.innerHTML = `
+    <div class="skeleton-linea"></div>
+    <div class="skeleton-linea"></div>
+  `;
+  return div;
+}
+
+function crearRespuesta(parsed) {
+  const div = document.createElement('div');
+  div.className = 'respuesta-anita';
+
+  let html = `<div class="anita-nombre">anita</div>`;
+  html += `<div class="anita-texto">${escapeHtml(parsed.respuesta)}</div>`;
+
+  if (parsed.pregunta) {
+    html += `<div class="anita-pregunta">${escapeHtml(parsed.pregunta)}</div>`;
+  }
+
+  if (parsed.hook && parsed.hook !== parsed.respuesta) {
+    html += `<div class="anita-hook">${escapeHtml(parsed.hook)}</div>`;
+  }
+
+  html += `<span class="anita-tono">${parsed.tono || ''}</span>`;
+
+  div.innerHTML = html;
+  return div;
+}
+
+// ── MOOD ──
+function actualizarMoodPorTono(tono) {
+  const mapa = {
+    'filoso': '◈',
+    'tierno': '◌',
+    'oscuro': '◆',
+    'irónico': '◇'
+  };
+  const icono = mapa[tono] || '◈';
+  document.getElementById('mood-icono').textContent = icono;
+}
+
+// ── TOAST ──
+function mostrarToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('visible');
+}
+
+function ocultarToast() {
+  document.getElementById('toast').classList.remove('visible');
+}
+
+// ── SERVICE WORKER + PUSH ──
+const VAPID_PUBLIC_KEY = 'REEMPLAZAR_CON_TU_VAPID_PUBLIC_KEY';
+
+async function registrarSW() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+
+  try {
+    const reg = await navigator.serviceWorker.register('/sw.js');
+    console.log('SW registrado');
+
+    // Pedir permiso de notificaciones después de la primera respuesta de Anita
+    estado.swReg = reg;
+  } catch (err) {
+    console.warn('SW error:', err);
+  }
+}
+
+async function pedirPermisoPush() {
+  if (!estado.swReg) return;
+  if (Notification.permission === 'granted') {
+    await suscribirPush();
+    return;
+  }
+  if (Notification.permission === 'denied') return;
+
+  const perm = await Notification.requestPermission();
+  if (perm === 'granted') await suscribirPush();
+}
+
+async function suscribirPush() {
+  if (!estado.swReg) return;
+  try {
+    const sub = await estado.swReg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array(VAPID_PUBLIC_KEY)
+    });
+    estado.pushSub = sub;
+    // Guardar en localStorage para enviarlo al backend cuando haga falta
+    localStorage.setItem('anita_push_sub', JSON.stringify(sub));
+    console.log('Push suscripto');
+  } catch (err) {
+    console.warn('Push sub error:', err);
+  }
+}
+
+function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - base64String.length % 4) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const raw = atob(base64);
+  return Uint8Array.from(raw, c => c.charCodeAt(0));
+}
+
+registrarSW();
+
+// ── UTILS ──
+function escapeHtml(str) {
+  return str
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/\n/g, '<br>');
+}
+</script>
+</body>
+</html>
