@@ -1478,7 +1478,7 @@ async function enviar() {
   estado.cargando = true;
   btnEnviar.disabled = true;
   btnEnviar.classList.add('cargando');
-  btnEnviar.textContent = 'pensando';
+  // btnEnviar cargando — SVG animado
 
   // Limpiar input
   textarea.value = '';
@@ -1609,7 +1609,7 @@ async function enviar() {
 
   estado.cargando = false;
   btnEnviar.classList.remove('cargando');
-  btnEnviar.textContent = 'enviar';
+  // btnEnviar listo — SVG intacto
   btnEnviar.disabled = textarea.value.length < 20;
 }
 
