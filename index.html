@@ -1593,8 +1593,14 @@ async function enviar() {
     // Pausa breve — que parezca que pensó
     await new Promise(r => setTimeout(r, 900 + Math.random() * 800));
 
-    // Quitar skeleton — la respuesta no se muestra en el feed, solo se guarda
+    // Reemplazar skeleton con entrada + respuesta
     skeletonEl.remove();
+
+    const entradaVisible = crearEntrada(texto, entradaId);
+    const respuestaVisible = crearRespuesta(parsed);
+    entradaVisible.appendChild(respuestaVisible);
+    document.getElementById('feed').prepend(entradaVisible);
+    document.getElementById('estado-vacio').style.display = 'none';
 
     // Actualizar mood según tono
     actualizarMoodPorTono(parsed.tono || 'filoso');
