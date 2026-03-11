@@ -198,6 +198,33 @@ document.getElementById('btn-descargar').addEventListener('click', async () => {
     font-style: italic;
   }
 
+  .splash-tagline {
+    margin-top: 2rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.4rem;
+    opacity: 0;
+    animation: aparecer-tagline 0.8s ease forwards 1.2s;
+  }
+
+  .splash-tagline span {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--gris-claro);
+    opacity: 0;
+  }
+
+  #st-1 { animation: aparecer-tagline 0.6s ease forwards 1.2s; }
+  #st-2 { animation: aparecer-tagline 0.6s ease forwards 1.8s; }
+  #st-3 { animation: aparecer-tagline 0.6s ease forwards 2.4s; }
+
+  @keyframes aparecer-tagline {
+    to { opacity: 1; }
+  }
+
   .splash-linea {
     width: 1px;
     height: 0;
@@ -844,15 +871,17 @@ document.getElementById('btn-descargar').addEventListener('click', async () => {
 <div id="splash">
   <div class="splash-nombre">anita</div>
   <div class="splash-linea"></div>
+  <div class="splash-tagline" id="splash-tagline">
+    <span id="st-1">contale a anita.</span>
+    <span id="st-2">ella interpreta.</span>
+    <span id="st-3">ella recuerda.</span>
+  </div>
 </div>
 
 <!-- APP -->
 <div id="app">
   <header>
-    <div>
-      <div class="header-nombre">an<span>i</span>ta</div>
-      <div class="header-tagline">contale a anita. ella interpreta. ella recuerda.</div>
-    </div>
+    <div class="header-nombre">an<span>i</span>ta</div>
     <div style="display:flex;align-items:center;gap:1rem">
       <button class="busqueda-toggle" id="btn-descargar" title="descargar todo" aria-label="descargar">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
@@ -989,7 +1018,7 @@ window.addEventListener('load', () => {
       document.getElementById('splash').style.display = 'none';
       document.getElementById('app').classList.add('visible');
     }, 800);
-  }, 1400);
+  }, 5000);
 
   rotateMood();
   setInterval(rotateMood, 8000);
