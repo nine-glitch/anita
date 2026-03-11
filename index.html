@@ -683,6 +683,32 @@
   #foto-input {
     display: none;
   }
+  /* ── SILENCIO ── */
+  .respuesta-silencio {
+    padding: 1.5rem 0 1.5rem 1rem;
+    border-left: 1px solid var(--cobre);
+    margin: 1rem 0 2rem;
+  }
+
+  .silencio-texto {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.1rem;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--negro);
+    letter-spacing: 0.02em;
+  }
+
+  .silencio-punto {
+    display: inline-block;
+    width: 4px;
+    height: 4px;
+    background: var(--cobre);
+    border-radius: 50%;
+    margin-left: 0.3rem;
+    vertical-align: middle;
+  }
+
   /* ── BÚSQUEDA ── */
   .busqueda-toggle {
     background: none;
@@ -767,6 +793,52 @@
   .btn-generando {
     animation: pulso 1.2s ease infinite;
     color: var(--cobre) !important;
+  }
+
+  /* ── SELECCIÓN BÚSQUEDA ── */
+  .entrada-seleccionable {
+    cursor: default;
+  }
+
+  .entrada-select-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.25rem;
+  }
+
+  .entrada-check {
+    accent-color: var(--cobre);
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .entrada-foto-thumb {
+    max-width: 100px;
+    max-height: 100px;
+    object-fit: cover;
+    border: 1px solid var(--blanco-2);
+    margin-bottom: 0.5rem;
+  }
+
+  .btn-desc-seleccion {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--negro);
+    color: var(--blanco);
+    border: none;
+    padding: 0.6rem 1rem;
+    cursor: pointer;
+    margin-bottom: 1rem;
+    transition: background 0.2s;
+  }
+
+  .btn-desc-seleccion:hover {
+    background: var(--cobre);
   }
 
   /* ── SCROLLBAR ── */
@@ -868,7 +940,8 @@
 
   <div class="feed" id="feed">
     <div class="estado-vacio" id="estado-vacio">
-      <p>anita está escuchando. <span style="color:var(--cobre);font-style:normal;">y recuerda.</span></p>
+      <p>anita está escuchando <span style="color:var(--cobre);font-style:normal;">y recuerda.</span></p>
+    <p style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--gris-claro);letter-spacing:0.08em;margin-top:0.5rem;">tus entradas son tuyas, nadie más las ve.</p>
     </div>
   </div>
 </div>
@@ -937,6 +1010,7 @@ Lo que sí hacés:
 - Seguís las instrucciones de memoria que vienen con cada entrada. Son parte del sistema — no las ignorés. Si dice que es entrada de memoria activa, buscás algo concreto en el historial y lo traés. Si dice que observes nomás, observás.
 - Cuando algo se repite espontáneamente podés nombrarlo igual: "Esto ya apareció antes." "Empiezo a ver algo." Sin explicar qué.
 - A veces mostrás duda genuina: "No estoy segura de esto." "Puede que me equivoque, pero—" Eso te humaniza.
+- A veces el silencio es la respuesta más poderosa. Si algo merece solo una palabra o una frase muy corta, usá silencio:true. La respuesta aparece distinta en la pantalla — sola, con más aire. No lo uses siempre. Úsalo cuando algo te deja sin necesidad de agregar nada más.
 - En la entrada 7, una vez sola: "Creo que ya tengo suficiente contexto para decir algo más preciso. Pero eso requiere acceso completo." Solo una vez. Sin insistir.
 
 Ejemplos de lo que SÍ suena como Anita:
@@ -952,7 +1026,7 @@ Respondé SOLO en JSON válido, sin backticks, sin texto fuera del JSON:
   "hook": "la frase más verdadera o incómoda, sin contexto",
   "pregunta": null,
   "tema_interno": "una palabra",
-  "silencio": false
+  "silencio": true o false — true cuando una sola frase corta o incluso una palabra es suficiente y más poderoso que desarrollar. El silencio no es ausencia, es elección.
 }`;
 
 // ── INICIALIZACIÓN ──
@@ -1112,7 +1186,8 @@ async function enviar() {
     ocultarToast();
 
     // Guardar en estado
-    estado.posts.push({ texto, respuesta: parsed.respuesta, fecha: new Date().toISOString() });
+    const fotoDataUrl = fotoBase64 ? `data:${fotoMediaType};base64,${fotoBase64}` : null;
+    estado.posts.push({ texto, respuesta: parsed.respuesta, fecha: new Date().toISOString(), foto: fotoDataUrl });
     estado.totalPosts++;
     localStorage.setItem('anita-total', estado.totalPosts.toString());
     localStorage.setItem('anita-posts', JSON.stringify(estado.posts));
@@ -1185,6 +1260,14 @@ function crearSkeleton(entradaId) {
 }
 
 function crearRespuesta(parsed) {
+  // Modo silencio — respuesta sola, con más aire
+  if (parsed.silencio) {
+    const div = document.createElement('div');
+    div.className = 'respuesta-silencio';
+    div.innerHTML = `<span class="silencio-texto">${escapeHtml(parsed.respuesta)}</span><span class="silencio-punto"></span>`;
+    return div;
+  }
+
   const div = document.createElement('div');
   div.className = 'respuesta-anita';
 
@@ -1194,8 +1277,6 @@ function crearRespuesta(parsed) {
   if (parsed.pregunta) {
     html += `<div class="anita-pregunta">${escapeHtml(parsed.pregunta)}</div>`;
   }
-
-  // hook interno — no se muestra
 
   div.innerHTML = html;
   return div;
@@ -1391,6 +1472,131 @@ document.getElementById('foto-quitar').addEventListener('click', () => {
   fotoImg.src = '';
 });
 
+
+// ── DESCARGA SELECCIÓN ──
+async function descargarSeleccion() {
+  if (!estado.pro) { mostrarPaywall('descarga'); return; }
+
+  const checks = document.querySelectorAll('.entrada-check:checked');
+  if (checks.length === 0) return;
+
+  const matches = document.getElementById('resultado-busqueda')._matches || [];
+  const seleccionados = Array.from(checks).map(c => matches[parseInt(c.dataset.idx)]).filter(Boolean);
+
+  const btn = document.getElementById('btn-desc-seleccion');
+  btn.textContent = 'generando…';
+
+  await new Promise(r => setTimeout(r, 100));
+
+  try {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+
+    const margen = 20;
+    const ancho = doc.internal.pageSize.getWidth() - margen * 2;
+    let y = margen;
+
+    // Título
+    doc.setFont('helvetica', 'italic');
+    doc.setFontSize(18);
+    doc.setTextColor(158, 79, 16);
+    doc.text('anita', margen, y);
+    y += 5;
+    doc.setFontSize(7);
+    doc.setTextColor(122, 112, 104);
+    doc.setFont('helvetica', 'normal');
+    doc.text(`${seleccionados.length} entrada${seleccionados.length !== 1 ? 's' : ''} seleccionada${seleccionados.length !== 1 ? 's' : ''}`, margen, y);
+    y += 10;
+    doc.setDrawColor(200, 191, 176);
+    doc.setLineWidth(0.3);
+    doc.line(margen, y, margen + ancho, y);
+    y += 8;
+
+    for (const p of seleccionados) {
+      // Foto si existe
+      if (p.foto) {
+        try {
+          const imgAncho = 60;
+          const imgAlto = 45;
+          if (y + imgAlto > doc.internal.pageSize.getHeight() - margen) {
+            doc.addPage(); y = margen;
+          }
+          doc.addImage(p.foto, 'JPEG', margen, y, imgAncho, imgAlto);
+          y += imgAlto + 4;
+        } catch(e) { /* si falla la imagen, continúa */ }
+      }
+
+      // Fecha
+      if (p.fecha) {
+        const fecha = new Date(p.fecha).toLocaleDateString('es-PY', {
+          day: 'numeric', month: 'long', year: 'numeric',
+          hour: '2-digit', minute: '2-digit'
+        });
+        doc.setFontSize(7);
+        doc.setTextColor(122, 112, 104);
+        const fechaLines = doc.splitTextToSize(fecha, ancho);
+        doc.text(fechaLines, margen, y);
+        y += fechaLines.length * 4 + 2;
+      }
+
+      // Texto
+      doc.setFontSize(10);
+      doc.setTextColor(26, 18, 8);
+      doc.setFont('helvetica', 'italic');
+      const textoLines = doc.splitTextToSize(p.texto, ancho);
+      if (y + textoLines.length * 5 > doc.internal.pageSize.getHeight() - margen) {
+        doc.addPage(); y = margen;
+      }
+      doc.text(textoLines, margen, y);
+      y += textoLines.length * 5 + 4;
+
+      // Respuesta Anita
+      doc.setFontSize(7);
+      doc.setTextColor(158, 79, 16);
+      doc.text('anita', margen + 4, y);
+      y += 4;
+
+      doc.setFontSize(9.5);
+      doc.setTextColor(30, 28, 21);
+      doc.setFont('helvetica', 'normal');
+      const respLines = doc.splitTextToSize(p.respuesta, ancho - 4);
+      if (y + respLines.length * 5 > doc.internal.pageSize.getHeight() - margen) {
+        doc.addPage(); y = margen;
+      }
+      doc.setDrawColor(158, 79, 16);
+      doc.setLineWidth(0.5);
+      doc.line(margen + 1, y - 3, margen + 1, y + respLines.length * 5);
+      doc.text(respLines, margen + 4, y);
+      y += respLines.length * 5 + 12;
+
+      // Separador
+      doc.setDrawColor(200, 191, 176);
+      doc.setLineWidth(0.2);
+      doc.line(margen, y - 6, margen + ancho, y - 6);
+    }
+
+    // Paginación
+    const totalPages = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      doc.setPage(i);
+      doc.setFontSize(7);
+      doc.setTextColor(122, 112, 104);
+      doc.text(`${i} / ${totalPages}`, doc.internal.pageSize.getWidth() / 2,
+        doc.internal.pageSize.getHeight() - 10, { align: 'center' });
+    }
+
+    const fecha = new Date().toISOString().slice(0, 10);
+    doc.save(`anita-seleccion-${fecha}.pdf`);
+
+  } catch(err) {
+    console.error('PDF error:', err);
+    mostrarToast('algo falló generando el pdf');
+    setTimeout(ocultarToast, 2500);
+  }
+
+  btn.textContent = `descargar ${checks.length} entrada${checks.length !== 1 ? 's' : ''}`;
+}
+
 // ── BÚSQUEDA ──
 const btnBusqueda = document.getElementById('btn-busqueda');
 const busquedaArea = document.getElementById('busqueda-area');
@@ -1449,18 +1655,35 @@ function buscar(q) {
   busquedaCount.textContent = `${matches.length} resultado${matches.length !== 1 ? 's' : ''}`;
   resultadoBusqueda.classList.add('visible');
 
-  matches.reverse().forEach(p => {
+  // Botón descargar selección
+  let btnDescSeleccion = document.getElementById('btn-desc-seleccion');
+  if (!btnDescSeleccion) {
+    btnDescSeleccion = document.createElement('button');
+    btnDescSeleccion.id = 'btn-desc-seleccion';
+    btnDescSeleccion.className = 'btn-desc-seleccion';
+    btnDescSeleccion.textContent = 'descargar selección';
+    btnDescSeleccion.style.display = 'none';
+    btnDescSeleccion.addEventListener('click', () => descargarSeleccion());
+    resultadoBusqueda.before(btnDescSeleccion);
+  }
+
+  matches.reverse().forEach((p, i) => {
     const div = document.createElement('div');
-    div.className = 'entrada';
+    div.className = 'entrada entrada-seleccionable';
+    div.dataset.idx = i;
 
     const fecha = p.fecha ? new Date(p.fecha).toLocaleDateString('es-PY', {
       day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit'
     }) : '';
 
+    const fotoHtml = p.foto ? `<img src="${p.foto}" class="entrada-foto-thumb">` : '';
+
     div.innerHTML = `
-      <div class="entrada-meta">
-        <span class="entrada-fecha">${fecha}</span>
+      <div class="entrada-select-row">
+        <input type="checkbox" class="entrada-check" data-idx="${i}">
+        <div class="entrada-meta"><span class="entrada-fecha">${fecha}</span></div>
       </div>
+      ${fotoHtml}
       <div class="entrada-texto">${highlight(escapeHtml(p.texto), q)}</div>
       <div class="respuesta-anita" style="animation:none">
         <div class="anita-nombre">anita</div>
@@ -1468,6 +1691,16 @@ function buscar(q) {
       </div>
     `;
     resultadoBusqueda.appendChild(div);
+  });
+
+  // Guardar matches para descarga
+  resultadoBusqueda._matches = matches;
+
+  // Mostrar/ocultar botón según selección
+  resultadoBusqueda.addEventListener('change', () => {
+    const checked = resultadoBusqueda.querySelectorAll('.entrada-check:checked').length;
+    btnDescSeleccion.style.display = checked > 0 ? 'block' : 'none';
+    btnDescSeleccion.textContent = checked === 1 ? 'descargar 1 entrada' : `descargar ${checked} entradas`;
   });
 }
 
