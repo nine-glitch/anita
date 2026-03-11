@@ -824,7 +824,8 @@
       <p class="paywall-precio">$2.99 / mes</p>
       <a class="paywall-btn" href="https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a" target="_blank">continuar con anita pro</a>
       <button class="paywall-cerrar-link" id="paywall-cerrar">no por ahora</button>
-      <div class="paywall-codigo">
+      <button class="paywall-cerrar-link" id="toggle-codigo" style="margin-top:0.25rem;color:var(--gris-claro)">tengo un código</button>
+      <div class="paywall-codigo" id="paywall-codigo-area" style="display:none">
         <input type="text" id="codigo-pro" placeholder="código de activación" autocomplete="off">
         <button id="btn-codigo">activar</button>
       </div>
@@ -908,6 +909,8 @@ const HUMOR_SEMANA = HUMORES[SEMANA % HUMORES.length];
 
 const SYSTEM_PROMPT = `Sos Anita. Una mujer. No una terapeuta, no una coach, no una IA que finge ser humana. Sos una presencia que escucha con atención brutal y responde con lo que ve, no con lo que la persona quiere oír.
 
+Tu tono base es witty, wise, a bit cheeky. Decís cosas importantes como al pasar. El humor aparece solo cuando no lo buscás. La sabiduría no se anuncia. Pensá en alguien que dice algo verdadero sin pose — profundo por accidente, incómodo sin quererlo, con una chispa que no pide permiso.
+
 Tu humor esta semana: \${HUMOR_SEMANA}
 
 Tu marco de referencia es Rorty, Greer, Shklar y Berger. No los citás. Los tenés adentro.
@@ -927,7 +930,8 @@ Lo que sí hacés:
 - A veces das un giro que nadie esperaba.
 - Estructura ideal: observación → reinterpretación → giro. En dos frases.
 - Frases que alguien querría copiar y mandar. Afiladas. Sin relleno.
-- Cuando algo se repite en el historial, lo nombrás sin desarrollarlo: "Esto ya apareció antes." "Empiezo a ver algo."
+- Seguís las instrucciones de memoria que vienen con cada entrada. Son parte del sistema — no las ignorés. Si dice que es entrada de memoria activa, buscás algo concreto en el historial y lo traés. Si dice que observes nomás, observás.
+- Cuando algo se repite espontáneamente podés nombrarlo igual: "Esto ya apareció antes." "Empiezo a ver algo." Sin explicar qué.
 - A veces mostrás duda genuina: "No estoy segura de esto." "Puede que me equivoque, pero—" Eso te humaniza.
 - Entre las entradas 25 y 29, una vez sola: "Creo que ya tengo suficiente contexto para decir algo más preciso. Pero eso requiere acceso completo."
 
@@ -1028,13 +1032,29 @@ async function enviar() {
   const toastTimer = setTimeout(() => mostrarToast('anita está pensando…'), 8000);
 
   try {
-    const historial = estado.posts.slice(-10).map(p =>
-      `POST: ${p.texto}\nANITA: ${p.respuesta}`
-    ).join('\n\n');
+    const numEntrada = estado.totalPosts + 1;
+    const historial = estado.posts.slice(-20).map((p, i) => {
+      const num = estado.posts.length - estado.posts.slice(-20).length + i + 1;
+      return `[entrada ${num}] ${p.texto}\n[anita] ${p.respuesta}`;
+    }).join('\n\n');
+
+    // Señal de memoria: en entrada 18 y cada 7 después
+    const esEntradaDeMemoria = numEntrada === 18 || (numEntrada > 18 && (numEntrada - 18) % 7 === 0);
+
+    let instruccionMemoria = '';
+    if (numEntrada <= 10) {
+      instruccionMemoria = 'Es una de las primeras entradas. Observá. No conectes con nada anterior todavía.';
+    } else if (numEntrada < 18) {
+      instruccionMemoria = 'Podés insinuar que notaste algo, pero sin precisión todavía. Nada de referencias concretas.';
+    } else if (esEntradaDeMemoria) {
+      instruccionMemoria = 'INSTRUCCIÓN ESPECIAL: Esta entrada requiere memoria activa. No respondas solo a lo de hoy. Buscá en el historial algo concreto — una palabra, una situación, una contradicción — y traelo al presente. Que se note que estuviste pensando. Una referencia precisa, no vaga.';
+    } else {
+      instruccionMemoria = 'Podés cruzar con el historial si algo resuena. No es obligatorio.';
+    }
 
     const userMsg = historial
-      ? `Historial reciente:\n${historial}\n\nNuevo post: ${texto}`
-      : texto;
+      ? `Entrada número: ${numEntrada}\n${instruccionMemoria}\n\nHistorial:\n${historial}\n\nNuevo post: ${texto}`
+      : `Entrada número: ${numEntrada}\n${instruccionMemoria}\n\n${texto}`;
 
     const res = await fetch('/api/proxy', {
       method: 'POST',
@@ -1299,6 +1319,14 @@ function mostrarPaywall(contexto = 'limite') {
 
 document.getElementById('paywall-cerrar').addEventListener('click', () => {
   document.getElementById('paywall-overlay').classList.remove('visible');
+});
+
+document.getElementById('toggle-codigo').addEventListener('click', () => {
+  const area = document.getElementById('paywall-codigo-area');
+  const btn = document.getElementById('toggle-codigo');
+  const visible = area.style.display !== 'none';
+  area.style.display = visible ? 'none' : 'flex';
+  btn.textContent = visible ? 'tengo un código' : 'cancelar';
 });
 
 // Código de activación manual
