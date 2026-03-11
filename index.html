@@ -1449,7 +1449,7 @@ const charCount = document.getElementById('char-count');
 textarea.addEventListener('input', () => {
   const len = textarea.value.length;
   charCount.textContent = `${len} / 1000`;
-  btnEnviar.disabled = len < 3 || estado.cargando;
+  btnEnviar.disabled = len < 20 || estado.cargando;
 
   // auto-resize
   textarea.style.height = 'auto';
@@ -1610,7 +1610,7 @@ async function enviar() {
   estado.cargando = false;
   btnEnviar.classList.remove('cargando');
   btnEnviar.textContent = 'enviar';
-  btnEnviar.disabled = textarea.value.length < 3;
+  btnEnviar.disabled = textarea.value.length < 20;
 }
 
 // ── CREAR ELEMENTOS ──
