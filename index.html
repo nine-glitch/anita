@@ -877,7 +877,7 @@
 
 <script>
 // ── ESTADO ──
-const LIMITE_FREE = 30;
+const LIMITE_FREE = 8;
 const LEMON_URL = 'https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a';
 
 const estado = {
@@ -891,7 +891,11 @@ const estado = {
     return id;
   })(),
   pro: localStorage.getItem('anita-pro') === 'true',
-  totalPosts: parseInt(localStorage.getItem('anita-total') || '0')
+  totalPosts: parseInt(localStorage.getItem('anita-total') || '0'),
+  posts: (() => {
+    try { return JSON.parse(localStorage.getItem('anita-posts') || '[]'); }
+    catch { return []; }
+  })()
 };
 
 // Humor semanal — cambia cada lunes
@@ -933,7 +937,7 @@ Lo que sí hacés:
 - Seguís las instrucciones de memoria que vienen con cada entrada. Son parte del sistema — no las ignorés. Si dice que es entrada de memoria activa, buscás algo concreto en el historial y lo traés. Si dice que observes nomás, observás.
 - Cuando algo se repite espontáneamente podés nombrarlo igual: "Esto ya apareció antes." "Empiezo a ver algo." Sin explicar qué.
 - A veces mostrás duda genuina: "No estoy segura de esto." "Puede que me equivoque, pero—" Eso te humaniza.
-- Entre las entradas 25 y 29, una vez sola: "Creo que ya tengo suficiente contexto para decir algo más preciso. Pero eso requiere acceso completo."
+- En la entrada 7, una vez sola: "Creo que ya tengo suficiente contexto para decir algo más preciso. Pero eso requiere acceso completo." Solo una vez. Sin insistir.
 
 Ejemplos de lo que SÍ suena como Anita:
 "No parece tristeza. Parece decepción bien educada."
@@ -964,7 +968,13 @@ window.addEventListener('load', () => {
   rotateMood();
   setInterval(rotateMood, 8000);
   actualizarEstadoPro();
+  cargarPostsGuardados();
 });
+
+function cargarPostsGuardados() {
+  // Las entradas se cargan en estado pero no se muestran en el feed.
+  // Solo son visibles a través de la búsqueda.
+}
 
 function rotateMood() {
   const iconos = estado.moodCiclo;
@@ -1019,14 +1029,16 @@ async function enviar() {
   // Ocultar estado vacío
   document.getElementById('estado-vacio').style.display = 'none';
 
-  // Agregar entrada al feed
+  // La entrada no va al feed visible — solo se guarda y es accesible via búsqueda
+  // Usamos un nodo fantasma para el skeleton mientras espera respuesta
   const entradaId = Date.now();
-  const entradaEl = crearEntrada(texto, entradaId);
-  document.getElementById('feed').prepend(entradaEl);
+  const entradaEl = document.createElement('div');
+  entradaEl.className = 'entrada';
+  entradaEl.dataset.id = entradaId;
 
-  // Mostrar skeleton
+  // Mostrar skeleton en zona de input como indicador
   const skeletonEl = crearSkeleton(entradaId);
-  entradaEl.appendChild(skeletonEl);
+  document.getElementById('feed').prepend(skeletonEl);
 
   // Toast si tarda
   const toastTimer = setTimeout(() => mostrarToast('anita está pensando…'), 8000);
@@ -1042,12 +1054,14 @@ async function enviar() {
     const esEntradaDeMemoria = numEntrada === 18 || (numEntrada > 18 && (numEntrada - 18) % 7 === 0);
 
     let instruccionMemoria = '';
-    if (numEntrada <= 10) {
-      instruccionMemoria = 'Es una de las primeras entradas. Observá. No conectes con nada anterior todavía.';
-    } else if (numEntrada < 18) {
-      instruccionMemoria = 'Podés insinuar que notaste algo, pero sin precisión todavía. Nada de referencias concretas.';
-    } else if (esEntradaDeMemoria) {
+    if (numEntrada <= 4) {
+      instruccionMemoria = 'Es una de las primeras entradas. Observá. No conectes con nada anterior todavía. Conocé a esta persona.';
+    } else if (numEntrada === 5) {
+      instruccionMemoria = 'Quinta entrada. Podés insinuar que notaste algo — sin precisión todavía. Una sombra, no una afirmación.';
+    } else if (numEntrada === 6 || esEntradaDeMemoria) {
       instruccionMemoria = 'INSTRUCCIÓN ESPECIAL: Esta entrada requiere memoria activa. No respondas solo a lo de hoy. Buscá en el historial algo concreto — una palabra, una situación, una contradicción — y traelo al presente. Que se note que estuviste pensando. Una referencia precisa, no vaga.';
+    } else if (numEntrada === 7) {
+      instruccionMemoria = 'Séptima entrada. Si algo de lo que dicen hoy conecta con un patrón que ya viste, nombralo de pasada. Natural, no forzado. Y si sentís que ya tenés suficiente contexto para decir algo más — podés insinuarlo.';
     } else {
       instruccionMemoria = 'Podés cruzar con el historial si algo resuena. No es obligatorio.';
     }
@@ -1098,9 +1112,10 @@ async function enviar() {
     ocultarToast();
 
     // Guardar en estado
-    estado.posts.push({ texto, respuesta: parsed.respuesta, fecha: new Date() });
+    estado.posts.push({ texto, respuesta: parsed.respuesta, fecha: new Date().toISOString() });
     estado.totalPosts++;
     localStorage.setItem('anita-total', estado.totalPosts.toString());
+    localStorage.setItem('anita-posts', JSON.stringify(estado.posts));
     actualizarEstadoPro();
 
     // Limpiar foto
@@ -1115,13 +1130,14 @@ async function enviar() {
       setTimeout(pedirPermisoPush, 2000);
     }
 
-    // Reemplazar skeleton con respuesta
+    // Pausa breve — que parezca que pensó
+    await new Promise(r => setTimeout(r, 900 + Math.random() * 800));
+
+    // Quitar skeleton — la respuesta no se muestra en el feed, solo se guarda
     skeletonEl.remove();
-    const respuestaEl = crearRespuesta(parsed);
-    entradaEl.appendChild(respuestaEl);
 
     // Actualizar mood según tono
-    actualizarMoodPorTono(parsed.tono);
+    actualizarMoodPorTono(parsed.tono || 'filoso');
 
   } catch (err) {
     clearTimeout(toastTimer);
@@ -1286,7 +1302,7 @@ function actualizarEstadoPro() {
   }
 
   // Mostrar banner cuando queden 5 o menos
-  if (total >= 25 && total < LIMITE_FREE) {
+  if (total >= 6 && total < LIMITE_FREE) {
     document.getElementById('banner-pro').classList.add('visible');
   }
 }
