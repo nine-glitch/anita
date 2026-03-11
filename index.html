@@ -1444,11 +1444,11 @@ function rotateMood() {
 // ── INPUT ──
 const textarea = document.getElementById('post-input');
 const btnEnviar = document.getElementById('btn-enviar');
-const charCount = document.getElementById('char-count');
+const charCount = document.getElementById('char-count'); // puede ser null
 
 textarea.addEventListener('input', () => {
   const len = textarea.value.length;
-  charCount.textContent = `${len} / 1000`;
+  if (charCount) charCount.textContent = `${len} / 1000`;
   btnEnviar.disabled = len < 20 || estado.cargando;
 
   // auto-resize
@@ -1483,7 +1483,7 @@ async function enviar() {
   // Limpiar input
   textarea.value = '';
   textarea.style.height = 'auto';
-  charCount.textContent = '0 / 1000';
+  if (charCount) charCount.textContent = '0 / 1000';
 
   // Ocultar estado vacío
   document.getElementById('estado-vacio').style.display = 'none';
