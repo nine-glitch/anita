@@ -1,16 +1,18 @@
 // sw.js — Anita Service Worker
-
-const CACHE = 'anita-v1';
-const ASSETS = ['/', '/index.html'];
+// Cambiá el número de versión cada vez que deployás para limpiar el cache
+const CACHE = 'anita-v3';
+const ASSETS = ['/'];
 
 // Instalar
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE)
+      .then(c => c.addAll(ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
-// Activar
+// Activar — elimina caches viejos
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys().then(keys =>
@@ -19,14 +21,32 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch — cache first para assets
+// Fetch — network first para HTML, cache first para el resto
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   if (e.request.url.includes('/api/')) return;
 
-  e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
-  );
+  const isHTML = e.request.headers.get('accept')?.includes('text/html')
+    || e.request.url.endsWith('.html')
+    || e.request.url.endsWith('/');
+
+  if (isHTML) {
+    // Network first: siempre busca la versión nueva, cae al cache si no hay red
+    e.respondWith(
+      fetch(e.request)
+        .then(res => {
+          const clone = res.clone();
+          caches.open(CACHE).then(c => c.put(e.request, clone));
+          return res;
+        })
+        .catch(() => caches.match(e.request))
+    );
+  } else {
+    // Cache first para assets estáticos (fuentes, etc.)
+    e.respondWith(
+      caches.match(e.request).then(cached => cached || fetch(e.request))
+    );
+  }
 });
 
 // Push notification
