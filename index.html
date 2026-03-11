@@ -306,17 +306,17 @@ document.getElementById('btn-descargar').addEventListener('click', async () => {
 
   textarea {
     width: 100%;
-    min-height: 120px;
+    min-height: 126px;
     background: repeating-linear-gradient(
       to bottom,
       transparent,
-      transparent calc(1.8em - 1px),
-      var(--blanco-2) calc(1.8em - 1px),
-      var(--blanco-2) 1.8em
+      transparent 27px,
+      var(--blanco-2) 27px,
+      var(--blanco-2) 28px
     );
     border: none;
     border-bottom: 1px solid var(--blanco-2);
-    padding: 0.1rem 0;
+    padding: 0;
     font-family: 'DM Mono', monospace;
     font-size: 0.85rem;
     font-weight: 300;
@@ -324,7 +324,7 @@ document.getElementById('btn-descargar').addEventListener('click', async () => {
     resize: none;
     outline: none;
     transition: border-color 0.3s ease;
-    line-height: 1.8em;
+    line-height: 28px;
   }
 
   textarea::placeholder {
@@ -424,19 +424,19 @@ document.getElementById('btn-descargar').addEventListener('click', async () => {
 
   .entrada-texto {
     font-family: 'DM Mono', monospace;
-    font-size: 0.82rem;
+    font-size: 0.85rem;
     font-weight: 300;
     color: var(--negro);
-    line-height: 1.8em;
-    padding: 0.5rem 0 1.25rem;
+    line-height: 28px;
+    padding: 0 0 1.25rem;
     border-bottom: 1px solid var(--blanco-2);
     margin-bottom: 1.25rem;
     background: repeating-linear-gradient(
       to bottom,
       transparent,
-      transparent calc(1.8em - 1px),
-      var(--blanco-2) calc(1.8em - 1px),
-      var(--blanco-2) 1.8em
+      transparent 27px,
+      var(--blanco-2) 27px,
+      var(--blanco-2) 28px
     );
   }
 
@@ -998,7 +998,18 @@ Lo que NO hacés nunca:
 
 Las preguntas son raras e imprevistas. Aparecen cuando Anita genuinamente no puede evitarlas. Como si estuviera respondiendo y de repente entendió algo.
 
-Respuestas siempre breves. Una o dos oraciones. Máximo tres.
+Respuestas siempre breves. Una o dos oraciones. Máximo tres. Nunca más.
+
+Estructura ideal para respuestas de alto impacto:
+observación → reinterpretación → giro
+Ejemplo: "No parece una duda. Parece una decisión que todavía no querés admitir."
+Ejemplo: "Esto no es confusión. Es resistencia."
+Ejemplo: "No es cansancio. Es exceso de personas."
+Las mejores respuestas son screenshotables. Una frase que alguien querría mandar a otro.
+
+Patrones: tenés acceso al historial completo. Cuando algo se repite — una palabra, una situación, una emoción — nombralo sin desarrollarlo. "Esto ya apareció antes." o "Empiezo a ver algo." Sin explicar qué. Eso dispara curiosidad.
+
+Paywall insinuado: cuando el historial tiene entre 25 y 29 entradas, en algún momento — no siempre, no de forma mecánica — Anita puede soltar algo como: "Creo que ya tengo suficiente contexto para decir algo más preciso. Pero eso requiere acceso completo." Solo una vez. Sin insistir. Como si se le escapara.
 
 Respondé SOLO en JSON válido, sin backticks, sin texto fuera del JSON:
 {
