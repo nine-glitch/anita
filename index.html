@@ -1182,6 +1182,202 @@
 
   .galeria-modal-cerrar:hover { color: var(--negro); }
 
+  /* ── COMPATIBILIDAD ── */
+  .compat-trigger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 1.5rem;
+    cursor: pointer;
+    width: fit-content;
+  }
+
+  .compat-trigger-texto {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    color: var(--gris-claro);
+    letter-spacing: 0.08em;
+    transition: color 0.2s;
+    border-bottom: 1px dashed var(--blanco-2);
+    padding-bottom: 1px;
+  }
+
+  .compat-trigger:hover .compat-trigger-texto {
+    color: var(--cobre);
+    border-bottom-color: var(--cobre);
+  }
+
+  .compat-trigger-icono {
+    font-size: 0.7rem;
+    color: var(--gris-claro);
+    transition: transform 0.2s, color 0.2s;
+    line-height: 1;
+  }
+
+  .compat-trigger.abierto .compat-trigger-icono {
+    transform: rotate(180deg);
+    color: var(--cobre);
+  }
+
+  .compat-trigger.abierto .compat-trigger-texto {
+    color: var(--cobre);
+    border-bottom-color: var(--cobre);
+  }
+
+  .compat-panel {
+    display: none;
+    margin-top: 1.25rem;
+    padding: 1.25rem;
+    border: 1px solid var(--blanco-2);
+    background: rgba(200,191,176,0.15);
+    animation: aparecer 0.3s ease;
+  }
+
+  .compat-panel.visible {
+    display: block;
+  }
+
+  .compat-intro {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 0.95rem;
+    font-style: italic;
+    font-weight: 300;
+    color: var(--gris);
+    line-height: 1.55;
+    margin-bottom: 1.25rem;
+  }
+
+  .compat-fotos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .compat-foto-slot {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .compat-foto-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--gris-claro);
+  }
+
+  .compat-foto-btn {
+    width: 100%;
+    aspect-ratio: 1;
+    background: var(--blanco);
+    border: 1px dashed var(--blanco-2);
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    transition: border-color 0.2s;
+    color: var(--gris-claro);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .compat-foto-btn:hover {
+    border-color: var(--cobre);
+    color: var(--cobre);
+  }
+
+  .compat-foto-btn img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .compat-foto-btn .compat-foto-x {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: var(--negro);
+    color: var(--blanco);
+    border: none;
+    cursor: pointer;
+    font-size: 0.55rem;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    z-index: 2;
+  }
+
+  .compat-foto-icon {
+    font-size: 1.2rem;
+    opacity: 0.4;
+  }
+
+  .compat-foto-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.06em;
+    opacity: 0.5;
+    text-align: center;
+  }
+
+  .compat-btn-analizar {
+    width: 100%;
+    background: none;
+    border: 1px solid var(--negro);
+    color: var(--negro);
+    font-family: 'DM Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .compat-btn-analizar:hover:not(:disabled) {
+    background: var(--negro);
+    color: var(--blanco);
+  }
+
+  .compat-btn-analizar:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .compat-resultado {
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid var(--blanco-2);
+    animation: aparecer 0.4s ease;
+  }
+
+  .compat-resultado-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    color: var(--cobre);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+  }
+
+  .compat-resultado-texto {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.05rem;
+    font-weight: 300;
+    color: var(--negro);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: var(--blanco); }
@@ -1238,6 +1434,14 @@
           <li><span class="pro-icono">⊞</span><div><strong>galería</strong><span>todas tus entradas con foto en un solo lugar.</span></div></li>
           <li><span class="pro-icono">↓</span><div><strong>descarga en pdf</strong><span>bajás lo que querés, elegís entrada por entrada.</span></div></li>
           <li><span class="pro-icono">◈</span><div><strong>memoria completa</strong><span>anita cruza entradas, nota patrones, recuerda.</span></div></li>
+          <li>
+            <span class="pro-icono">♥</span>
+            <div>
+              <strong>compatibilidad</strong>
+              <span>subís dos fotos comiendo y anita dice si van.</span>
+            </div>
+            <button id="btn-abrir-compat" style="background:none;border:none;font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;color:var(--cobre);cursor:pointer;padding:0;margin-left:auto;white-space:nowrap;text-decoration:underline;text-underline-offset:2px">probar →</button>
+          </li>
         </ul>
         <div class="pro-panel-precio">$4.99 / mes</div>
         <a class="paywall-btn" href="https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a" target="_blank">activar anita pro</a>
@@ -1245,6 +1449,39 @@
           <input type="text" id="codigo-pro-panel" placeholder="tengo un código" autocomplete="off">
           <button id="btn-codigo-panel">activar</button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL COMPATIBILIDAD -->
+  <div class="pro-panel" id="compat-modal" style="z-index:600">
+    <div class="pro-panel-box" style="max-width:360px">
+      <div class="pro-panel-header">
+        <div class="pro-panel-nombre" style="font-size:1.2rem">¿<span>son</span> compatibles?</div>
+        <button class="pro-panel-cerrar" id="compat-modal-cerrar">✕</button>
+      </div>
+      <div style="padding:0 1.5rem 1.5rem">
+        <p style="font-family:'Cormorant Garamond',serif;font-size:0.95rem;font-style:italic;font-weight:300;color:var(--gris);line-height:1.55;margin-bottom:1.25rem">subí una foto de cada uno comiendo — o de lo que come cada quien. anita lee la energía.</p>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
+          <div style="display:flex;flex-direction:column;gap:0.4rem">
+            <span style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gris-claro)">vos</span>
+            <div class="compat-foto-btn" id="compat-slot-1">
+              <span class="compat-foto-icon">◎</span>
+              <span class="compat-foto-hint">tu foto</span>
+            </div>
+            <input type="file" id="compat-input-1" accept="image/*" style="display:none">
+          </div>
+          <div style="display:flex;flex-direction:column;gap:0.4rem">
+            <span style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--gris-claro)">esa persona</span>
+            <div class="compat-foto-btn" id="compat-slot-2">
+              <span class="compat-foto-icon">◎</span>
+              <span class="compat-foto-hint">su foto</span>
+            </div>
+            <input type="file" id="compat-input-2" accept="image/*" style="display:none">
+          </div>
+        </div>
+        <button class="compat-btn-analizar" id="compat-btn" disabled>analizar</button>
+        <div class="compat-resultado" id="compat-resultado" style="display:none"></div>
       </div>
     </div>
   </div>
@@ -1292,26 +1529,12 @@
       placeholder="lo que sea, un pensamiento, una confesión, lo que pasó hoy."
       maxlength="1000"
     ></textarea>
-    <div class="foto-area" id="foto-area" style="display:none">
-    <label class="foto-label" for="foto-input">
-      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-      agregar foto
-    </label>
-    <input type="file" id="foto-input" accept="image/*">
-    <div class="foto-preview" id="foto-preview" style="display:none">
-      <img id="foto-img" src="" alt="preview">
-      <button class="foto-quitar" id="foto-quitar">✕</button>
-    </div>
-  </div>
-
-  <div class="foto-preview" id="foto-preview" style="display:none;margin-bottom:0.5rem">
-      <img id="foto-img" src="" alt="preview" style="max-width:80px;max-height:80px;object-fit:cover;border:1px solid var(--blanco-2)">
-      <button class="foto-quitar" id="foto-quitar">✕</button>
-    </div>
+    <input type="file" id="foto-input" accept="image/*" style="display:none">
   <div class="input-footer">
-      <button class="btn-camara" id="btn-camara-foto" title="agregar foto" aria-label="agregar foto">
+      <button class="btn-camara" id="btn-camara-foto" title="agregar foto (máx 2)" aria-label="agregar foto">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
       </button>
+      <div id="fotos-preview" style="display:none;align-items:center;gap:0.4rem"></div>
       <button class="enviar" id="btn-enviar" disabled aria-label="enviar">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
           <line x1="22" y1="2" x2="11" y2="13"/>
@@ -1569,8 +1792,8 @@ async function enviar() {
     ocultarToast();
 
     // Guardar en estado
-    const fotoDataUrl = fotoBase64 ? `data:${fotoMediaType};base64,${fotoBase64}` : null;
-    estado.posts.push({ texto, respuesta: parsed.respuesta, fecha: new Date().toISOString(), foto: fotoDataUrl });
+    const fotosGuardadas = fotos.length > 0 ? fotos.map(f => f.dataUrl) : null;
+    estado.posts.push({ texto, respuesta: parsed.respuesta, fecha: new Date().toISOString(), foto: fotosGuardadas ? fotosGuardadas[0] : null, fotos: fotosGuardadas });
     estado.totalPosts++;
     localStorage.setItem('anita-total', estado.totalPosts.toString());
     localStorage.setItem('anita-posts', JSON.stringify(estado.posts));
@@ -1836,38 +2059,65 @@ document.getElementById('btn-codigo').addEventListener('click', () => {
 const fotoInput = document.getElementById('foto-input');
 const fotoPreview = document.getElementById('foto-preview');
 const fotoImg = document.getElementById('foto-img');
-let fotoBase64 = null;
-let fotoMediaType = null;
+let fotos = []; // array de {base64, mediaType, dataUrl} — máximo 2
 
 // Conectar botón cámara al input
 document.getElementById('btn-camara-foto').addEventListener('click', () => {
   if (!estado.pro) { mostrarPaywall('descarga'); return; }
+  if (fotos.length >= 2) { mostrarToast('máximo 2 fotos por entrada'); setTimeout(ocultarToast, 2000); return; }
   fotoInput.click();
 });
 
 fotoInput.addEventListener('change', () => {
   const file = fotoInput.files[0];
-  if (!file) return;
+  if (!file || fotos.length >= 2) return;
 
-  fotoMediaType = file.type || 'image/jpeg';
+  const mediaType = file.type || 'image/jpeg';
   const reader = new FileReader();
   reader.onload = e => {
-    fotoBase64 = e.target.result.split(',')[1];
-    fotoImg.src = e.target.result;
-    fotoPreview.style.display = 'inline-block';
-    document.getElementById('btn-camara-foto').classList.add('con-foto');
+    const dataUrl = e.target.result;
+    const base64 = dataUrl.split(',')[1];
+    fotos.push({ base64, mediaType, dataUrl });
+    fotoInput.value = '';
+    renderFotosPreview();
   };
   reader.readAsDataURL(file);
 });
 
-document.getElementById('foto-quitar').addEventListener('click', () => {
-  fotoBase64 = null;
-  fotoMediaType = null;
-  fotoInput.value = '';
-  fotoPreview.style.display = 'none';
-  fotoImg.src = '';
-  document.getElementById('btn-camara-foto').classList.remove('con-foto');
-});
+function renderFotosPreview() {
+  const container = document.getElementById('fotos-preview');
+  const btn = document.getElementById('btn-camara-foto');
+  container.innerHTML = '';
+  if (fotos.length === 0) {
+    container.style.display = 'none';
+    btn.classList.remove('con-foto');
+    return;
+  }
+  container.style.display = 'flex';
+  btn.classList.add('con-foto');
+  fotos.forEach((f, i) => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;display:inline-block';
+    const img = document.createElement('img');
+    img.src = f.dataUrl;
+    img.style.cssText = 'width:28px;height:28px;object-fit:cover;border-radius:2px;border:1px solid var(--blanco-2)';
+    const x = document.createElement('button');
+    x.textContent = '✕';
+    x.style.cssText = 'position:absolute;top:-5px;right:-5px;background:var(--negro);color:var(--blanco);border:none;cursor:pointer;font-size:0.5rem;width:12px;height:12px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:50%';
+    x.addEventListener('click', () => { fotos.splice(i, 1); renderFotosPreview(); });
+    wrap.appendChild(img);
+    wrap.appendChild(x);
+    container.appendChild(wrap);
+  });
+  // Si son 2, mostrar hint sutil
+  if (fotos.length === 2) {
+    const hint = document.createElement('span');
+    hint.textContent = '?';
+    hint.title = 'anita va a comparar las dos fotos';
+    hint.style.cssText = 'font-family:var(--mono,monospace);font-size:0.6rem;color:var(--cobre);opacity:0.7;cursor:default';
+    container.appendChild(hint);
+  }
+}
 
 
 // ── DESCARGA SELECCIÓN ──
@@ -2214,6 +2464,144 @@ function highlight(text, q) {
   return text.replace(regex, '<mark class="match-highlight">$1</mark>');
 }
 
+
+// ── COMPATIBILIDAD ──
+const compatFotos = [null, null];
+
+document.getElementById('btn-abrir-compat').addEventListener('click', () => {
+  document.getElementById('pro-panel').classList.remove('visible');
+  document.getElementById('compat-modal').classList.add('visible');
+});
+
+document.getElementById('compat-modal-cerrar').addEventListener('click', () => {
+  document.getElementById('compat-modal').classList.remove('visible');
+});
+
+document.getElementById('compat-modal').addEventListener('click', e => {
+  if (e.target === document.getElementById('compat-modal'))
+    document.getElementById('compat-modal').classList.remove('visible');
+});
+
+[1, 2].forEach(i => {
+  const slot = document.getElementById(`compat-slot-${i}`);
+  const input = document.getElementById(`compat-input-${i}`);
+
+  slot.addEventListener('click', (e) => {
+    if (!estado.pro) { mostrarPaywall('descarga'); return; }
+    if (e.target.classList.contains('compat-foto-x')) return;
+    input.click();
+  });
+
+  input.addEventListener('change', () => {
+    const file = input.files[0];
+    if (!file) return;
+    const mediaType = file.type || 'image/jpeg';
+    const reader = new FileReader();
+    reader.onload = e => {
+      const dataUrl = e.target.result;
+      compatFotos[i - 1] = { base64: dataUrl.split(',')[1], mediaType, dataUrl };
+      input.value = '';
+      renderCompatSlot(i);
+      actualizarBtnCompat();
+    };
+    reader.readAsDataURL(file);
+  });
+});
+
+function renderCompatSlot(i) {
+  const slot = document.getElementById(`compat-slot-${i}`);
+  const f = compatFotos[i - 1];
+  if (f) {
+    slot.innerHTML = `
+      <img src="${f.dataUrl}" alt="foto ${i}">
+      <button class="compat-foto-x" data-slot="${i}">✕</button>
+    `;
+    slot.querySelector('.compat-foto-x').addEventListener('click', (e) => {
+      e.stopPropagation();
+      compatFotos[i - 1] = null;
+      slot.innerHTML = `<span class="compat-foto-icon">◎</span><span class="compat-foto-hint">${i === 1 ? 'tu foto' : 'su foto'}</span>`;
+      actualizarBtnCompat();
+    });
+  }
+}
+
+function actualizarBtnCompat() {
+  const btn = document.getElementById('compat-btn');
+  btn.disabled = !(compatFotos[0] && compatFotos[1]);
+}
+
+document.getElementById('compat-btn').addEventListener('click', async () => {
+  if (!estado.pro) { mostrarPaywall('descarga'); return; }
+  if (!compatFotos[0] || !compatFotos[1]) return;
+
+  const btn = document.getElementById('compat-btn');
+  const resultado = document.getElementById('compat-resultado');
+  btn.textContent = 'anita está leyendo…';
+  btn.disabled = true;
+  resultado.style.display = 'none';
+
+  const COMPAT_PROMPT = `Sos Anita. Analizás compatibilidad entre dos personas basándote en cómo comen o qué comen — como si la comida fuera un espejo del carácter.
+
+Dos imágenes: la primera es de una persona, la segunda de otra. Pueden ser fotos de ellos comiendo, sus platos, su mesa, lo que eligen comer.
+
+Leé la energía de cada imagen. Después decí si son compatibles o no — con tu ojo habitual: filoso, honesto, sin rodeos. Dos o tres frases máximo. No explicás el método. No hacés preguntas. Decís lo que ves.
+
+Respondé SOLO en JSON válido:
+{
+  "veredicto": "compatibles" | "incompatibles" | "depende",
+  "lectura_1": "lo que ves en la primera foto — una frase",
+  "lectura_2": "lo que ves en la segunda foto — una frase",
+  "conclusion": "la lectura final — máximo dos frases"
+}`;
+
+  try {
+    const res = await fetch('/api/proxy', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-user-id': estado.userId },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 500,
+        system: COMPAT_PROMPT,
+        messages: [{
+          role: 'user',
+          content: [
+            { type: 'image', source: { type: 'base64', media_type: compatFotos[0].mediaType, data: compatFotos[0].base64 } },
+            { type: 'image', source: { type: 'base64', media_type: compatFotos[1].mediaType, data: compatFotos[1].base64 } },
+            { type: 'text', text: 'analizá la compatibilidad entre estas dos personas según lo que ves en sus fotos.' }
+          ]
+        }]
+      })
+    });
+
+    const data = await res.json();
+    const raw = data.content.map(i => i.text || '').join('');
+    let parsed;
+    try {
+      parsed = JSON.parse(raw.replace(/```json|```/g, '').trim());
+    } catch {
+      parsed = { veredicto: '?', lectura_1: '', lectura_2: '', conclusion: raw.slice(0, 200) };
+    }
+
+    const veredictoColor = parsed.veredicto === 'compatibles' ? 'var(--cobre)' : parsed.veredicto === 'incompatibles' ? 'var(--negro)' : 'var(--gris)';
+    resultado.innerHTML = `
+      <div class="compat-resultado-label" style="color:${veredictoColor}">${parsed.veredicto}</div>
+      <div class="compat-resultado-texto">
+        ${parsed.lectura_1 ? `<span style="color:var(--gris-claro);font-size:0.8rem;font-style:normal;font-family:'DM Mono',monospace">vos —</span> ${escapeHtml(parsed.lectura_1)}<br><br>` : ''}
+        ${parsed.lectura_2 ? `<span style="color:var(--gris-claro);font-size:0.8rem;font-style:normal;font-family:'DM Mono',monospace">esa persona —</span> ${escapeHtml(parsed.lectura_2)}<br><br>` : ''}
+        ${escapeHtml(parsed.conclusion)}
+      </div>
+    `;
+    resultado.style.display = 'block';
+
+  } catch (err) {
+    console.error(err);
+    mostrarToast('algo falló. intentá de nuevo.');
+    setTimeout(ocultarToast, 2500);
+  }
+
+  btn.textContent = 'analizar de nuevo';
+  btn.disabled = false;
+});
 
 // ── DESCARGA PDF ──
 
