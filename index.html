@@ -1376,11 +1376,14 @@
             <polygon points="22 2 15 22 11 13 2 9 22 2"/>
           </svg>
         </button>
+        <button class="btn-camara" id="btn-mic" title="hablar" aria-label="dictar por voz">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10a7 7 0 0 1-14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+        </button>
       </div>
     </div>
     <div class="input-footer">
       <button class="btn-camara" id="btn-telon" title="guardar sin respuesta" aria-label="guardar sin respuesta">
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
       </button>
       <span class="char-count" id="char-count"></span>
     </div>
@@ -1617,11 +1620,14 @@ textarea.addEventListener('input', () => {
   if (len > 0) textarea.classList.remove('sin-caret');
   else if (document.activeElement === textarea) textarea.classList.add('sin-caret');
 
-  // Mostrar/ocultar avión
+  // Mostrar avión / ocultar mic cuando hay texto
+  const btnMic = document.getElementById('btn-mic');
   if (len > 0) {
     btnEnviar.classList.add('visible');
+    btnMic.style.display = 'none';
   } else {
     btnEnviar.classList.remove('visible');
+    btnMic.style.display = '';
   }
 
   // auto-resize
@@ -1680,6 +1686,7 @@ async function enviar() {
   btnEnviar.disabled = true;
   btnEnviar.classList.add('cargando');
   btnEnviar.classList.remove('visible');
+  document.getElementById('btn-mic').style.display = '';
 
   // Mostrar typing indicator
   const typingEl = document.getElementById('typing-indicator');
