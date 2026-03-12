@@ -1400,6 +1400,38 @@
     font-style: italic;
   }
 
+  /* ── VOZ ── */
+  .btn-camara.grabando {
+    color: var(--cobre);
+    animation: pulso 0.8s ease infinite;
+  }
+
+  .btn-escuchar {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.75rem;
+    background: none;
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.08em;
+    color: var(--gris-claro);
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-escuchar:hover {
+    color: var(--cobre);
+  }
+
+  .btn-escuchar.leyendo {
+    color: var(--cobre);
+    animation: pulso 1s ease infinite;
+  }
+
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: var(--blanco); }
@@ -1555,6 +1587,9 @@
   <div class="input-footer">
       <button class="btn-camara" id="btn-camara-foto" title="agregar foto (máx 2)" aria-label="agregar foto">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </button>
+      <button class="btn-camara" id="btn-mic" title="hablar" aria-label="dictar por voz">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10a7 7 0 0 1-14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
       </button>
       <div id="fotos-preview" style="display:none;align-items:center;gap:0.4rem"></div>
       <button class="enviar" id="btn-enviar" disabled aria-label="enviar">
@@ -1895,6 +1930,15 @@ async function enviar() {
     const entradaVisible = crearEntrada(texto, entradaId);
     const respuestaVisible = crearRespuesta(parsed);
     entradaVisible.appendChild(respuestaVisible);
+
+    // Botón escuchar respuesta
+    if ('speechSynthesis' in window) {
+      const btnEscuchar = document.createElement('button');
+      btnEscuchar.className = 'btn-escuchar';
+      btnEscuchar.innerHTML = iconoEscuchar() + ' escuchar';
+      btnEscuchar.addEventListener('click', () => leerEnVoz(parsed.respuesta, btnEscuchar));
+      respuestaVisible.appendChild(btnEscuchar);
+    }
 
     // Si es la primera entrada, agregar botón compartir
     if (estado.totalPosts === 1) {
@@ -2726,6 +2770,128 @@ Respondé SOLO en JSON válido:
   btn.textContent = 'analizar de nuevo';
   btn.disabled = false;
 });
+
+// ── VOZ — INPUT (Web Speech API) ──
+let recognition = null;
+let grabando = false;
+
+const btnMic = document.getElementById('btn-mic');
+
+if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  recognition = new SR();
+  recognition.lang = 'es-AR';
+  recognition.continuous = false;
+  recognition.interimResults = true;
+
+  let transcriptBase = '';
+
+  recognition.onstart = () => {
+    grabando = true;
+    btnMic.classList.add('grabando');
+    transcriptBase = textarea.value;
+  };
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    let final = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) final += t;
+      else interim += t;
+    }
+    textarea.value = transcriptBase + (transcriptBase && (final || interim) ? ' ' : '') + (final || interim);
+    textarea.dispatchEvent(new Event('input'));
+    if (final) transcriptBase = textarea.value;
+  };
+
+  recognition.onend = () => {
+    grabando = false;
+    btnMic.classList.remove('grabando');
+  };
+
+  recognition.onerror = (e) => {
+    grabando = false;
+    btnMic.classList.remove('grabando');
+    if (e.error !== 'no-speech') mostrarToast('micrófono no disponible');
+    setTimeout(ocultarToast, 2000);
+  };
+
+  btnMic.addEventListener('click', () => {
+    if (grabando) {
+      recognition.stop();
+    } else {
+      try { recognition.start(); }
+      catch { mostrarToast('ya hay una grabación activa'); setTimeout(ocultarToast, 1500); }
+    }
+  });
+} else {
+  // Browser no soporta — ocultar botón
+  btnMic.style.display = 'none';
+}
+
+// ── VOZ — OUTPUT (speechSynthesis) ──
+let vozActiva = null;
+
+function leerEnVoz(texto, btn) {
+  if (!('speechSynthesis' in window)) return;
+
+  // Si ya está leyendo, parar
+  if (vozActiva) {
+    window.speechSynthesis.cancel();
+    if (vozActiva === btn) {
+      vozActiva = null;
+      btn.classList.remove('leyendo');
+      btn.innerHTML = iconoEscuchar() + ' escuchar';
+      return;
+    }
+  }
+
+  const utterance = new SpeechSynthesisUtterance(texto);
+  utterance.lang = 'es-AR';
+  utterance.rate = 0.9;
+  utterance.pitch = 1.05;
+
+  // Elegir voz femenina en español si existe
+  const voces = window.speechSynthesis.getVoices();
+  const voz = voces.find(v => v.lang.startsWith('es') && v.name.toLowerCase().includes('female'))
+    || voces.find(v => v.lang.startsWith('es'))
+    || null;
+  if (voz) utterance.voice = voz;
+
+  utterance.onstart = () => {
+    vozActiva = btn;
+    btn.classList.add('leyendo');
+    btn.innerHTML = iconoStop() + ' parar';
+  };
+
+  utterance.onend = () => {
+    vozActiva = null;
+    btn.classList.remove('leyendo');
+    btn.innerHTML = iconoEscuchar() + ' escuchar';
+  };
+
+  utterance.onerror = () => {
+    vozActiva = null;
+    btn.classList.remove('leyendo');
+    btn.innerHTML = iconoEscuchar() + ' escuchar';
+  };
+
+  window.speechSynthesis.speak(utterance);
+}
+
+function iconoEscuchar() {
+  return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/></svg>`;
+}
+
+function iconoStop() {
+  return `<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="6" width="12" height="12"/></svg>`;
+}
+
+// Parchear crearRespuesta para agregar botón escuchar
+const _crearRespuestaOrig = crearRespuesta;
+// No podemos patchear fácil — en cambio, agregamos el botón en el flujo de enviar
+// (ver abajo en la función enviar — se inyecta después de crear la respuesta)
 
 // ── DESCARGA PDF ──
 
