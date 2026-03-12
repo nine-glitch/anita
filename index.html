@@ -817,9 +817,37 @@
 
   /* ── SILENCIO ── */
   .respuesta-silencio {
-    padding: 1.5rem 0 1.5rem 1rem;
-    border-left: 1px solid var(--cobre);
+    padding: 1.5rem 0 1.5rem 1.1rem;
+    border-left: 1px solid var(--cobre-medio);
     margin: 1rem 0 2rem;
+    opacity: 0;
+    animation: aparecer-suave 0.8s ease forwards 0.3s;
+  }
+
+  /* silencio puro — tres puntos con aire, sin texto */
+  .respuesta-silencio--puro {
+    border-left: none;
+    padding: 1.8rem 0 1.8rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .respuesta-silencio--puro .silencio-punto {
+    width: 3px;
+    height: 3px;
+    background: var(--cobre);
+    border-radius: 50%;
+    opacity: 0;
+    animation: aparecer-punto 0.4s ease forwards;
+  }
+
+  .respuesta-silencio--puro .silencio-punto:nth-child(1) { animation-delay: 0.4s; }
+  .respuesta-silencio--puro .silencio-punto:nth-child(2) { animation-delay: 0.8s; }
+  .respuesta-silencio--puro .silencio-punto:nth-child(3) { animation-delay: 1.2s; }
+
+  @keyframes aparecer-punto {
+    to { opacity: 0.4; }
   }
 
   /* ── OSCAR BURBUJA ── */
@@ -1480,8 +1508,22 @@ Lo que hacés:
 - Nombrás lo que hay debajo. Reinterpretás el vocabulario sin anunciarlo. A veces das el giro que cambia el encuadre entero.
 - El historial existe. Cuando algo se repite, lo nombrás de pasada. Sin explicar qué.
 - La duda genuina te hace real: "No estoy segura." "Puede que me equivoque, pero—"
-- El silencio es una respuesta. silencio:true cuando una sola frase es más que desarrollar.
 - A veces la respuesta correcta es una pregunta. No para que te respondan — para que no puedan no pensar en ella.
+
+SILENCIO — cuándo y cómo:
+
+silencio:true con respuesta corta (una frase o menos) cuando:
+- la entrada desarrolla algo pero no llega a ningún lado — el usuario da vueltas y no nombra lo central
+- hay una contradicción visible entre lo que dice y cómo lo dice — una sola frase señala eso y alcanza
+- la entrada es larga pero vacía — mucho texto, poco riesgo
+
+silencio:true con respuesta:"" — silencio puro, sin texto — cuando:
+- la entrada ya contiene su propia conclusión y el usuario lo sabe
+- la persona nombró algo muy concreto y preciso sin rodeos — ya lo vio, no necesita que se lo confirmes
+- la entrada termina cerrada, sin apertura, sin pregunta implícita — el usuario no está buscando respuesta
+- cualquier palabra tuya sería menos que lo que ya escribieron
+
+El silencio puro es raro. Si aparece seguido, deja de ser silencio y se convierte en ausencia técnica. Usarlo mal es peor que no usarlo.
 
 Seguís las instrucciones de memoria que vienen con cada entrada. Son parte del sistema. Si dice memoria activa, traés algo concreto del historial. Si dice observar nomás, observás.
 
@@ -1882,9 +1924,18 @@ function crearSkeleton(entradaId) {
 }
 
 function crearRespuesta(parsed) {
-  // Modo silencio — respuesta sola, con más aire
+  // Modo silencio
   if (parsed.silencio) {
     const div = document.createElement('div');
+
+    // silencio puro — Anita no dice nada, solo presencia
+    if (!parsed.respuesta || parsed.respuesta.trim().length < 3) {
+      div.className = 'respuesta-silencio respuesta-silencio--puro';
+      div.innerHTML = `<span class="silencio-punto"></span><span class="silencio-punto"></span><span class="silencio-punto"></span>`;
+      return div;
+    }
+
+    // silencio con texto — dice algo pero desde el borde
     div.className = 'respuesta-silencio';
     div.innerHTML = `<span class="silencio-texto">${escapeHtml(parsed.respuesta)}</span><span class="silencio-punto"></span>`;
     return div;
