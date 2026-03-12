@@ -1713,19 +1713,22 @@ window.addEventListener('load', () => {
 });
 
 function cargarPostsGuardados() {
-  // Mostrar las últimas 5 entradas en el feed al cargar
-  if (estado.posts.length === 0) return;
-  const feed = document.getElementById('feed');
-  document.getElementById('estado-vacio').style.display = 'none';
-  const recientes = estado.posts.slice(-5).reverse();
-  recientes.forEach(p => {
-    const id = p.fecha ? new Date(p.fecha).getTime() : Date.now();
-    const entradaEl = crearEntrada(p.texto, id);
-    const respuestaEl = crearRespuesta({ respuesta: p.respuesta, silencio: false });
-    entradaEl.appendChild(respuestaEl);
-    entradaEl.style.animation = 'none'; // sin animación al cargar
-    feed.appendChild(entradaEl);
-  });
+  try {
+    if (estado.posts.length === 0) return;
+    const feed = document.getElementById('feed');
+    document.getElementById('estado-vacio').style.display = 'none';
+    const recientes = estado.posts.slice(-5).reverse();
+    recientes.forEach(p => {
+      try {
+        const id = p.fecha ? new Date(p.fecha).getTime() : Date.now();
+        const entradaEl = crearEntrada(p.texto || '', id);
+        const respuestaEl = crearRespuesta({ respuesta: p.respuesta || '', silencio: false });
+        entradaEl.appendChild(respuestaEl);
+        entradaEl.style.animation = 'none';
+        feed.appendChild(entradaEl);
+      } catch(e) { console.warn('entrada rota:', e); }
+    });
+  } catch(e) { console.error('cargarPostsGuardados error:', e); }
 }
 
 function rotateMood() {
