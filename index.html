@@ -601,6 +601,20 @@
     font-weight: 300;
   }
 
+  .onboarding-cursor {
+    width: 1.5px;
+    height: 1.2em;
+    background: var(--cobre);
+    border-radius: 1px;
+    margin: 2rem auto 0;
+    opacity: 0;
+    animation: onboarding-aparecer 0.8s ease forwards 1s, cursor-blink 1.05s ease-in-out infinite 1.8s;
+  }
+
+  @keyframes onboarding-aparecer {
+    to { opacity: 1; }
+  }
+
   /* ── TOAST ── */
   .toast {
     position: fixed;
@@ -1272,7 +1286,7 @@
     <div class="splash-tagline" id="splash-tagline">
       <span id="st-1">dos voces</span>
       <span id="st-2">ninguna te cree del todo</span>
-      <span id="st-3">pero recuerdan todo</span>
+      <span id="st-3">pero recuerdan</span>
     </div>
     <div class="splash-linea"></div>
     <div class="splash-nombre">mesa chica</div>
@@ -1420,7 +1434,8 @@
   <div class="feed" id="feed">
     <div class="estado-vacio" id="estado-vacio">
       <p>la mesa está puesta. <span style="color:var(--cobre);font-style:normal;">la tertulia empieza cuando vos querés.</span></p>
-    <p style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--gris-claro);letter-spacing:0.08em;margin-top:0.5rem;">lo que traés acá es tuyo. nadie más lo ve.</p>
+      <p style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--gris-claro);letter-spacing:0.08em;margin-top:0.5rem;">lo que traés acá es tuyo. nadie más lo ve.</p>
+      <div class="onboarding-cursor" id="onboarding-cursor"></div>
     </div>
   </div>
 </div>
