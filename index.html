@@ -192,11 +192,13 @@
 
   .header-tagline {
     font-family: 'DM Mono', monospace;
-    font-size: 0.58rem;
-    color: var(--marfil-3);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-top: 0.25rem;
+    font-size: 0.62rem;
+    font-style: italic;
+    font-weight: 300;
+    color: #6a6458;
+    letter-spacing: 0.12em;
+    text-transform: none;
+    margin-top: 0.3rem;
   }
 
   .header-nombre {
@@ -327,23 +329,20 @@
   }
 
   .cursor-falso {
-    color: var(--cobre);
-    font-family: 'Cormorant Garamond', Georgia, serif;
-    font-size: 1.1rem;
-    font-weight: 200;
-    line-height: 1.55;
-    animation: cursor-blink 1.1s step-start infinite;
-    pointer-events: none;
-    user-select: none;
+    display: none;
+    width: 1.5px;
+    height: 1.15em;
+    background: var(--cobre);
+    border-radius: 1px;
     flex-shrink: 0;
     align-self: flex-start;
-    padding-top: 1px;
-    display: none;
+    margin-top: 3px;
+    animation: cursor-blink 1.05s ease-in-out infinite;
   }
 
   @keyframes cursor-blink {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0; }
+    0%, 45% { opacity: 1; }
+    55%, 100% { opacity: 0; }
   }
 
   .chat-acciones {
@@ -1243,9 +1242,9 @@
 <div id="splash">
   <div class="splash-centro">
     <div class="splash-tagline" id="splash-tagline">
-      <span id="st-1">dos voces.</span>
-      <span id="st-2">ninguna te cree del todo.</span>
-      <span id="st-3">pero recuerdan todo.</span>
+      <span id="st-1">dos voces</span>
+      <span id="st-2">ninguna te cree del todo</span>
+      <span id="st-3">pero recuerdan todo</span>
     </div>
     <div class="splash-linea"></div>
     <div class="splash-nombre">mesa chica</div>
@@ -1258,7 +1257,10 @@
 <!-- APP -->
 <div id="app">
   <header>
-    <div class="header-nombre">mesa ch<span>i</span>ca</div>
+    <div>
+      <div class="header-nombre">mesa ch<span>i</span>ca</div>
+      <div class="header-tagline">lo que traés acá es tuyo. nadie más lo ve.</div>
+    </div>
     <div style="display:flex;align-items:center;gap:1rem">
 
       <button class="busqueda-toggle" id="btn-busqueda" title="buscar" aria-label="buscar">
@@ -1366,11 +1368,8 @@
         maxlength="1000"
         rows="1"
       ></textarea>
-      <span class="cursor-falso" id="cursor-falso">|</span>
+      <span class="cursor-falso" id="cursor-falso"></span>
       <div class="chat-acciones">
-        <button class="btn-camara" id="btn-mic" title="hablar" aria-label="dictar por voz">
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="11" rx="3"/><path d="M19 10a7 7 0 0 1-14 0"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
-        </button>
         <button class="enviar" id="btn-enviar" disabled aria-label="enviar">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
             <line x1="22" y1="2" x2="11" y2="13"/>
@@ -1596,27 +1595,7 @@ const btnEnviar = document.getElementById('btn-enviar');
 const charCount = document.getElementById('char-count'); // puede ser null
 const cursorFalso = document.getElementById('cursor-falso');
 
-// ── SONIDO TAZA ── generado por Web Audio API
-function sonidoTaza() {
-  try {
-    const ctx = new (window.AudioContext || window.webkitAudioContext)();
-    // toque suave — porcelana
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(ctx.destination);
-    osc.type = 'sine';
-    osc.frequency.setValueAtTime(1080, ctx.currentTime);
-    osc.frequency.exponentialRampToValueAtTime(680, ctx.currentTime + 0.18);
-    gain.gain.setValueAtTime(0.06, ctx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.22);
-    osc.start(ctx.currentTime);
-    osc.stop(ctx.currentTime + 0.22);
-  } catch(e) {}
-}
-
 textarea.addEventListener('focus', () => {
-  sonidoTaza();
   if (cursorFalso && textarea.value.length === 0) {
     cursorFalso.style.display = '';
     textarea.classList.add('sin-caret');
@@ -1638,14 +1617,11 @@ textarea.addEventListener('input', () => {
   if (len > 0) textarea.classList.remove('sin-caret');
   else if (document.activeElement === textarea) textarea.classList.add('sin-caret');
 
-  // Mostrar avión / ocultar mic cuando hay texto
-  const btnMic = document.getElementById('btn-mic');
+  // Mostrar/ocultar avión
   if (len > 0) {
     btnEnviar.classList.add('visible');
-    btnMic.style.display = 'none';
   } else {
     btnEnviar.classList.remove('visible');
-    btnMic.style.display = '';
   }
 
   // auto-resize
@@ -1704,7 +1680,6 @@ async function enviar() {
   btnEnviar.disabled = true;
   btnEnviar.classList.add('cargando');
   btnEnviar.classList.remove('visible');
-  document.getElementById('btn-mic').style.display = '';
 
   // Mostrar typing indicator
   const typingEl = document.getElementById('typing-indicator');
