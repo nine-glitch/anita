@@ -1340,22 +1340,27 @@ Respondé SOLO con la frase. Sin comillas, sin guión inicial, sin firma, sin na
 
 // ── INICIALIZACIÓN ──
 window.addEventListener('load', () => {
-  setTimeout(() => {
+  // Salida del splash — siempre ocurre, sin importar errores posteriores
+  const salirSplash = () => {
     document.getElementById('splash').classList.add('fade-out');
     setTimeout(() => {
       document.getElementById('splash').style.display = 'none';
       document.getElementById('app').classList.add('visible');
     }, 800);
-  }, 5000);
+  };
+  setTimeout(salirSplash, 5000);
 
-  // Placeholder onboarding
-  if (estado.totalPosts === 0) {
-    document.getElementById('post-input').placeholder = 'algo que no le contás a nadie. el telón está cerrado.';
+  try {
+    if (estado.totalPosts === 0) {
+      document.getElementById('post-input').placeholder = 'algo que no le contás a nadie. el telón está cerrado.';
+    }
+    rotateMood();
+    setInterval(rotateMood, 8000);
+    actualizarEstadoPro();
+    cargarPostsGuardados();
+  } catch(e) {
+    console.error('init error:', e);
   }
-  rotateMood();
-  setInterval(rotateMood, 8000);
-  actualizarEstadoPro();
-  cargarPostsGuardados();
 });
 
 function cargarPostsGuardados() {
