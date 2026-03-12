@@ -1699,6 +1699,44 @@ function rotateMood() {
   // mood-icono removido — reemplazado por botón pro
 }
 
+// ── FOTOS PREVIEW ──
+let fotos = [];
+
+function renderFotosPreview() {
+  const container = document.getElementById('fotos-preview');
+  const btn = document.getElementById('btn-camara-foto');
+  if (!container) return;
+  container.innerHTML = '';
+  if (fotos.length === 0) {
+    container.style.display = 'none';
+    if (btn) btn.classList.remove('con-foto');
+    return;
+  }
+  container.style.display = 'flex';
+  if (btn) btn.classList.add('con-foto');
+  fotos.forEach((f, i) => {
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:relative;display:inline-block';
+    const img = document.createElement('img');
+    img.src = f.dataUrl;
+    img.style.cssText = 'width:28px;height:28px;object-fit:cover;border-radius:2px;border:1px solid var(--blanco-2)';
+    const x = document.createElement('button');
+    x.textContent = '✕';
+    x.style.cssText = 'position:absolute;top:-5px;right:-5px;background:var(--negro);color:var(--blanco);border:none;cursor:pointer;font-size:0.5rem;width:12px;height:12px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:50%';
+    x.addEventListener('click', () => { fotos.splice(i, 1); renderFotosPreview(); });
+    wrap.appendChild(img);
+    wrap.appendChild(x);
+    container.appendChild(wrap);
+  });
+  if (fotos.length === 2) {
+    const hint = document.createElement('span');
+    hint.textContent = '?';
+    hint.title = 'anita va a comparar las dos fotos';
+    hint.style.cssText = 'font-family:monospace;font-size:0.6rem;color:var(--cobre);opacity:0.7;cursor:default';
+    container.appendChild(hint);
+  }
+}
+
 // ── INPUT ──
 const textarea = document.getElementById('post-input');
 const btnEnviar = document.getElementById('btn-enviar');
@@ -2107,7 +2145,7 @@ document.getElementById('btn-codigo').addEventListener('click', () => {
 // Foto
 const fotoInput = document.getElementById('foto-input');
 const fotoImg = document.getElementById('foto-img');
-let fotos = []; // array de {base64, mediaType, dataUrl} — máximo 2
+// fotos definido arriba
 
 // Conectar botón cámara al input
 document.getElementById('btn-camara-foto').addEventListener('click', () => {
