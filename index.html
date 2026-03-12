@@ -1487,7 +1487,7 @@
   </div>
 
   <div class="banner-pro" id="banner-pro">
-    <span>usaste <span id="contador-posts">0</span> de 30 entradas gratuitas.</span>
+    <span>usaste <span id="contador-posts">0</span> de 8 entradas gratuitas.</span>
     <a href="https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a" target="_blank">activar anita pro →</a>
   </div>
 
@@ -1497,7 +1497,7 @@
       <p class="paywall-cita" id="paywall-cita"></p>
       <div class="paywall-divisor"></div>
       <p class="paywall-texto" id="paywall-subtexto">entradas ilimitadas. análisis de fotos. y anita con más contexto.</p>
-      <p class="paywall-precio">$2.99 / mes</p>
+      <p class="paywall-precio">$4.99 / mes</p>
       <a class="paywall-btn" href="https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a" target="_blank">continuar con anita pro</a>
       <button class="paywall-cerrar-link" id="paywall-cerrar">no por ahora</button>
       <button class="paywall-cerrar-link" id="toggle-codigo" style="margin-top:0.25rem;color:var(--gris-claro)">tengo un código</button>
@@ -1542,6 +1542,11 @@
         </svg>
       </button>
     </div>
+  </div>
+
+  <div class="compat-trigger" id="compat-trigger">
+    <span class="compat-trigger-icono">▾</span>
+    <span class="compat-trigger-texto">¿son compatibles?</span>
   </div>
 
   <div class="feed" id="feed">
@@ -1652,8 +1657,19 @@ window.addEventListener('load', () => {
 });
 
 function cargarPostsGuardados() {
-  // Las entradas se cargan en estado pero no se muestran en el feed.
-  // Solo son visibles a través de la búsqueda.
+  // Mostrar las últimas 5 entradas en el feed al cargar
+  if (estado.posts.length === 0) return;
+  const feed = document.getElementById('feed');
+  document.getElementById('estado-vacio').style.display = 'none';
+  const recientes = estado.posts.slice(-5).reverse();
+  recientes.forEach(p => {
+    const id = p.fecha ? new Date(p.fecha).getTime() : Date.now();
+    const entradaEl = crearEntrada(p.texto, id);
+    const respuestaEl = crearRespuesta({ respuesta: p.respuesta, silencio: false });
+    entradaEl.appendChild(respuestaEl);
+    entradaEl.style.animation = 'none'; // sin animación al cargar
+    feed.appendChild(entradaEl);
+  });
 }
 
 function rotateMood() {
@@ -1709,16 +1725,14 @@ async function enviar() {
   // Ocultar estado vacío
   document.getElementById('estado-vacio').style.display = 'none';
 
-  // La entrada no va al feed visible — solo se guarda y es accesible via búsqueda
-  // Usamos un nodo fantasma para el skeleton mientras espera respuesta
   const entradaId = Date.now();
-  const entradaEl = document.createElement('div');
-  entradaEl.className = 'entrada';
-  entradaEl.dataset.id = entradaId;
 
-  // Mostrar skeleton en zona de input como indicador
+  // Skeleton visible arriba del feed
   const skeletonEl = crearSkeleton(entradaId);
-  document.getElementById('feed').prepend(skeletonEl);
+  const feed = document.getElementById('feed');
+  feed.classList.remove('oculto'); // asegurar visible
+  document.getElementById('estado-vacio').style.display = 'none';
+  feed.prepend(skeletonEl);
 
   // Toast si tarda
   const toastTimer = setTimeout(() => mostrarToast('anita está pensando…'), 8000);
@@ -1762,9 +1776,11 @@ async function enviar() {
         system: SYSTEM_PROMPT,
         messages: [{
           role: 'user',
-          content: fotoBase64 ? [
-            { type: 'image', source: { type: 'base64', media_type: fotoMediaType, data: fotoBase64 } },
-            { type: 'text', text: userMsg }
+          content: fotos.length > 0 ? [
+            ...fotos.map(f => ({ type: 'image', source: { type: 'base64', media_type: f.mediaType, data: f.base64 } })),
+            { type: 'text', text: fotos.length === 2
+              ? userMsg + '\n\n[HAY DOS FOTOS. Analizá ambas en conjunto. Si parecen ser de dos personas distintas, leé la energía de cada una y decí si son compatibles — sin rodeos, con tu ojo habitual. Si son de la misma persona, comparalas.]'
+              : userMsg }
           ] : userMsg
         }]
       })
@@ -1799,12 +1815,10 @@ async function enviar() {
     localStorage.setItem('anita-posts', JSON.stringify(estado.posts));
     actualizarEstadoPro();
 
-    // Limpiar foto
-    fotoBase64 = null;
-    fotoMediaType = null;
+    // Limpiar fotos
+    fotos = [];
     fotoInput.value = '';
-    fotoPreview.style.display = 'none';
-    fotoImg.src = '';
+    renderFotosPreview();
 
     // Pedir permiso push después de la primera respuesta
     if (estado.posts.length === 1) {
@@ -2057,7 +2071,6 @@ document.getElementById('btn-codigo').addEventListener('click', () => {
 
 // Foto
 const fotoInput = document.getElementById('foto-input');
-const fotoPreview = document.getElementById('foto-preview');
 const fotoImg = document.getElementById('foto-img');
 let fotos = []; // array de {base64, mediaType, dataUrl} — máximo 2
 
@@ -2084,40 +2097,7 @@ fotoInput.addEventListener('change', () => {
   reader.readAsDataURL(file);
 });
 
-function renderFotosPreview() {
-  const container = document.getElementById('fotos-preview');
-  const btn = document.getElementById('btn-camara-foto');
-  container.innerHTML = '';
-  if (fotos.length === 0) {
-    container.style.display = 'none';
-    btn.classList.remove('con-foto');
-    return;
-  }
-  container.style.display = 'flex';
-  btn.classList.add('con-foto');
-  fotos.forEach((f, i) => {
-    const wrap = document.createElement('div');
-    wrap.style.cssText = 'position:relative;display:inline-block';
-    const img = document.createElement('img');
-    img.src = f.dataUrl;
-    img.style.cssText = 'width:28px;height:28px;object-fit:cover;border-radius:2px;border:1px solid var(--blanco-2)';
-    const x = document.createElement('button');
-    x.textContent = '✕';
-    x.style.cssText = 'position:absolute;top:-5px;right:-5px;background:var(--negro);color:var(--blanco);border:none;cursor:pointer;font-size:0.5rem;width:12px;height:12px;display:flex;align-items:center;justify-content:center;padding:0;border-radius:50%';
-    x.addEventListener('click', () => { fotos.splice(i, 1); renderFotosPreview(); });
-    wrap.appendChild(img);
-    wrap.appendChild(x);
-    container.appendChild(wrap);
-  });
-  // Si son 2, mostrar hint sutil
-  if (fotos.length === 2) {
-    const hint = document.createElement('span');
-    hint.textContent = '?';
-    hint.title = 'anita va a comparar las dos fotos';
-    hint.style.cssText = 'font-family:var(--mono,monospace);font-size:0.6rem;color:var(--cobre);opacity:0.7;cursor:default';
-    container.appendChild(hint);
-  }
-}
+// renderFotosPreview — definida en sección foto diario
 
 
 // ── DESCARGA SELECCIÓN ──
@@ -2467,6 +2447,11 @@ function highlight(text, q) {
 
 // ── COMPATIBILIDAD ──
 const compatFotos = [null, null];
+
+document.getElementById('compat-trigger').addEventListener('click', () => {
+  if (!estado.pro) { mostrarPaywall('descarga'); return; }
+  document.getElementById('compat-modal').classList.add('visible');
+});
 
 document.getElementById('btn-abrir-compat').addEventListener('click', () => {
   document.getElementById('pro-panel').classList.remove('visible');
