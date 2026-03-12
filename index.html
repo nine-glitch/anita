@@ -1724,7 +1724,7 @@ function cargarPostsGuardados() {
         const respuestaEl = crearRespuesta({ respuesta: p.respuesta || '', silencio: false });
         entradaEl.appendChild(respuestaEl);
         entradaEl.style.animation = 'none';
-        feed.appendChild(entradaEl);
+        feed.insertBefore(entradaEl, feed.firstChild);
       } catch(e) { console.warn('entrada rota:', e); }
     });
   } catch(e) { console.error('cargarPostsGuardados error:', e); }
