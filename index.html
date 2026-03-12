@@ -1182,6 +1182,28 @@
 
   .galeria-modal-cerrar:hover { color: var(--negro); }
 
+  /* ── SHARE PRIMERA ENTRADA ── */
+  .btn-share-primera {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 1rem;
+    background: none;
+    border: none;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    color: var(--gris-claro);
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s;
+    text-transform: uppercase;
+  }
+
+  .btn-share-primera:hover {
+    color: var(--cobre);
+  }
+
   /* ── COMPATIBILIDAD ── */
   .compat-trigger {
     display: flex;
@@ -1650,6 +1672,10 @@ window.addEventListener('load', () => {
     }, 800);
   }, 5000);
 
+  // Placeholder onboarding
+  if (estado.totalPosts === 0) {
+    document.getElementById('post-input').placeholder = 'contame algo que no le contás a nadie.';
+  }
   rotateMood();
   setInterval(rotateMood, 8000);
   actualizarEstadoPro();
@@ -1748,7 +1774,9 @@ async function enviar() {
     const esEntradaDeMemoria = numEntrada === 18 || (numEntrada > 18 && (numEntrada - 18) % 7 === 0);
 
     let instruccionMemoria = '';
-    if (numEntrada <= 4) {
+    if (numEntrada === 1) {
+      instruccionMemoria = 'PRIMERA ENTRADA. Esta persona acaba de conocerte. Es tu única oportunidad de sorprenderla y hacer que vuelva. Respondé con algo que no esperaba escuchar — algo tan preciso o tan verdadero que sienta que la viste de verdad. Podés ser filosa, tierna, oscura o irónica — lo que la entrada pida. Pero tiene que ser inolvidable. No genérica. No bienvenida. No "gracias por compartir". Algo que ella vaya a querer mandarle a alguien.';
+    } else if (numEntrada <= 4) {
       instruccionMemoria = 'Es una de las primeras entradas. Observá. No conectes con nada anterior todavía. Conocé a esta persona.';
     } else if (numEntrada === 5) {
       instruccionMemoria = 'Quinta entrada. Podés insinuar que notaste algo — sin precisión todavía. Una sombra, no una afirmación.';
@@ -1834,6 +1862,18 @@ async function enviar() {
     const entradaVisible = crearEntrada(texto, entradaId);
     const respuestaVisible = crearRespuesta(parsed);
     entradaVisible.appendChild(respuestaVisible);
+
+    // Si es la primera entrada, agregar botón compartir
+    if (estado.totalPosts === 1) {
+      const shareBtn = document.createElement('button');
+      shareBtn.className = 'btn-share-primera';
+      shareBtn.innerHTML = `<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg> compartir respuesta`;
+      shareBtn.addEventListener('click', () => compartirRespuesta(parsed.respuesta));
+      entradaVisible.appendChild(shareBtn);
+      // Cambiar placeholder para las siguientes
+      document.getElementById('post-input').placeholder = 'lo que sea, un pensamiento, una confesión, lo que pasó hoy.';
+    }
+
     document.getElementById('feed').prepend(entradaVisible);
     document.getElementById('estado-vacio').style.display = 'none';
 
@@ -2444,6 +2484,77 @@ function highlight(text, q) {
   return text.replace(regex, '<mark class="match-highlight">$1</mark>');
 }
 
+
+// ── COMPARTIR RESPUESTA ──
+async function compartirRespuesta(respuesta) {
+  const canvas = document.createElement('canvas');
+  const dpr = window.devicePixelRatio || 1;
+  const w = 600, h = 340;
+  canvas.width = w * dpr;
+  canvas.height = h * dpr;
+  canvas.style.width = w + 'px';
+  canvas.style.height = h + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  // Fondo
+  ctx.fillStyle = '#e2d9c8';
+  ctx.fillRect(0, 0, w, h);
+
+  // Línea cobre izquierda
+  ctx.fillStyle = '#9e4f10';
+  ctx.fillRect(40, 60, 2, h - 120);
+
+  // Nombre "anita"
+  ctx.fillStyle = '#9e4f10';
+  ctx.font = '300 13px "DM Mono", monospace';
+  ctx.letterSpacing = '2px';
+  ctx.fillText('ANITA', 52, 80);
+
+  // Texto de respuesta — con wrap
+  ctx.fillStyle = '#1a1208';
+  ctx.font = '300 18px "Cormorant Garamond", Georgia, serif';
+  ctx.letterSpacing = '0px';
+  const maxWidth = w - 110;
+  const lineHeight = 28;
+  const words = respuesta.split(' ');
+  let line = '';
+  let y = 115;
+  for (const word of words) {
+    const test = line + word + ' ';
+    if (ctx.measureText(test).width > maxWidth && line) {
+      ctx.fillText(line.trim(), 52, y);
+      line = word + ' ';
+      y += lineHeight;
+    } else {
+      line = test;
+    }
+  }
+  ctx.fillText(line.trim(), 52, y);
+
+  // Footer
+  ctx.fillStyle = '#7a7068';
+  ctx.font = '300 11px "DM Mono", monospace';
+  ctx.fillText('anita-topaz.vercel.app', 52, h - 35);
+
+  // Descargar o compartir
+  canvas.toBlob(async (blob) => {
+    const file = new File([blob], 'anita.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare({ files: [file] })) {
+      try {
+        await navigator.share({ files: [file], title: 'anita me dijo esto' });
+        return;
+      } catch {}
+    }
+    // Fallback: descargar
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'anita.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+}
 
 // ── COMPATIBILIDAD ──
 const compatFotos = [null, null];
