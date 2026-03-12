@@ -1566,11 +1566,6 @@
     </div>
   </div>
 
-  <div class="compat-trigger" id="compat-trigger">
-    <span class="compat-trigger-icono">▾</span>
-    <span class="compat-trigger-texto">¿son compatibles?</span>
-  </div>
-
   <div class="feed" id="feed">
     <div class="estado-vacio" id="estado-vacio">
       <p>anita está escuchando <span style="color:var(--cobre);font-style:normal;">y recuerda.</span></p>
@@ -2558,11 +2553,6 @@ async function compartirRespuesta(respuesta) {
 
 // ── COMPATIBILIDAD ──
 const compatFotos = [null, null];
-
-document.getElementById('compat-trigger').addEventListener('click', () => {
-  if (!estado.pro) { mostrarPaywall('descarga'); return; }
-  document.getElementById('compat-modal').classList.add('visible');
-});
 
 document.getElementById('btn-abrir-compat').addEventListener('click', () => {
   document.getElementById('pro-panel').classList.remove('visible');
