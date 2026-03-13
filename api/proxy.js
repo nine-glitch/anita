@@ -1,5 +1,5 @@
-// api/proxy.js — Anita / Vercel Edge Function
-// Retry automático + fallback Anthropic ↔ OpenRouter
+// api/proxy.js — Mesa Chica / Vercel Edge Function
+// Anthropic + Supabase
 
 export const config = { runtime: 'edge' };
 
@@ -19,6 +19,59 @@ function getRateLimit(id) {
   return { allowed: true, remaining: RATE_LIMIT - entry.count };
 }
 
+// ── SUPABASE ──
+async function supabase(method, path, body, env) {
+  const url = `${env.SUPABASE_URL}/rest/v1${path}`;
+  const res = await fetch(url, {
+    method,
+    headers: {
+      'Content-Type': 'application/json',
+      'apikey': env.SUPABASE_SERVICE_KEY,
+      'Authorization': `Bearer ${env.SUPABASE_SERVICE_KEY}`,
+      'Prefer': method === 'POST' ? 'resolution=merge-duplicates,return=representation' : 'return=representation',
+    },
+    body: body ? JSON.stringify(body) : undefined,
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Supabase ${method} ${path}: ${err}`);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+async function upsertUsuario(userId, env) {
+  return supabase('POST', '/usuarios', {
+    id: userId,
+    ultimo_acceso: new Date().toISOString(),
+  }, env);
+}
+
+async function getUsuario(userId, env) {
+  const data = await supabase('GET', `/usuarios?id=eq.${userId}&select=*`, null, env);
+  return data?.[0] || null;
+}
+
+async function getEntradas(userId, limite, env) {
+  return supabase('GET', `/entradas?usuario_id=eq.${userId}&order=created_at.desc&limit=${limite}&select=*`, null, env);
+}
+
+async function guardarEntrada(userId, entrada, env) {
+  return supabase('POST', '/entradas', {
+    usuario_id: userId,
+    ...entrada,
+  }, env);
+}
+
+async function activarPro(userId, codigo, env) {
+  return supabase('PATCH', `/usuarios?id=eq.${userId}`, {
+    pro: true,
+    pro_activado_en: new Date().toISOString(),
+    codigo_usado: codigo,
+  }, env);
+}
+
+// ── ANTHROPIC ──
 function buildAnthropicRequest(body, key) {
   const b = { ...body };
   const allowedModels = ['claude-sonnet-4-6', 'claude-haiku-4-5-20251001'];
@@ -47,7 +100,7 @@ function buildOpenRouterRequest(body, key) {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${key}`,
       'HTTP-Referer': 'https://anita.app',
-      'X-Title': 'Anita',
+      'X-Title': 'Mesa Chica',
     },
     body: {
       model: 'anthropic/claude-sonnet-4-5',
@@ -84,24 +137,82 @@ async function callWithRetry(requestFn, maxRetries = 3, delayMs = 800) {
   throw lastError;
 }
 
+// ── HANDLER PRINCIPAL ──
 export default async function handler(req) {
   const origin = req.headers.get('origin') || '';
-const allowedOrigins = [
-  'https://anita.app',
-  'http://localhost:3000',
-  'https://anita-topaz.vercel.app',
-];
+  const allowedOrigins = [
+    'https://anita.app',
+    'http://localhost:3000',
+    'https://anita-topaz.vercel.app',
+  ];
   const corsOrigin = allowedOrigins.includes(origin) ? origin : allowedOrigins[0];
   const corsHeaders = {
     'Access-Control-Allow-Origin': corsOrigin,
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, x-user-id',
+    'Access-Control-Allow-Headers': 'Content-Type, x-user-id, x-action',
   };
 
   if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
 
-  const userId = req.headers.get('x-user-id') || req.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
+  const userId = req.headers.get('x-user-id') || 'unknown';
+  const action = req.headers.get('x-action') || 'chat';
+
+  const env = {
+    SUPABASE_URL: process.env.SUPABASE_URL,
+    SUPABASE_SERVICE_KEY: process.env.SUPABASE_SERVICE_KEY,
+  };
+
+  const hasSupabase = env.SUPABASE_URL && env.SUPABASE_SERVICE_KEY;
+
+  // ── ACCIONES DE DATOS (sin IA) ──
+  if (action === 'sync-usuario') {
+    if (!hasSupabase) return new Response(JSON.stringify({ error: 'no_supabase' }), { status: 500, headers: corsHeaders });
+    try {
+      await upsertUsuario(userId, env);
+      const usuario = await getUsuario(userId, env);
+      return new Response(JSON.stringify(usuario), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
+    }
+  }
+
+  if (action === 'get-entradas') {
+    if (!hasSupabase) return new Response(JSON.stringify([]), { headers: corsHeaders });
+    try {
+      let body;
+      try { body = await req.json(); } catch { body = {}; }
+      const limite = body.limite || 20;
+      const entradas = await getEntradas(userId, limite, env);
+      return new Response(JSON.stringify(entradas || []), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
+    }
+  }
+
+  if (action === 'guardar-entrada') {
+    if (!hasSupabase) return new Response(JSON.stringify({ ok: false }), { headers: corsHeaders });
+    try {
+      const entrada = await req.json();
+      await guardarEntrada(userId, entrada, env);
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
+    }
+  }
+
+  if (action === 'activar-pro') {
+    if (!hasSupabase) return new Response(JSON.stringify({ ok: false }), { headers: corsHeaders });
+    try {
+      const { codigo } = await req.json();
+      await activarPro(userId, codigo, env);
+      return new Response(JSON.stringify({ ok: true }), { headers: { ...corsHeaders, 'Content-Type': 'application/json' } });
+    } catch (e) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: corsHeaders });
+    }
+  }
+
+  // ── CHAT — rate limit + IA ──
   const { allowed, remaining } = getRateLimit(userId);
   if (!allowed) {
     return new Response(
