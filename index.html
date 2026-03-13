@@ -186,7 +186,7 @@
     align-items: center;
     justify-content: space-between;
     padding: 2rem 0 1.5rem;
-    border-bottom: 1px solid #231d14;
+    border-bottom: 1px solid #181310;
     margin-bottom: 2rem;
   }
 
@@ -287,16 +287,16 @@
     align-items: flex-end;
     gap: 0.5rem;
     background: #18130d;
-    border: 1px solid #2e2316;
+    border: 1.5px solid #2e2316;
     border-radius: 18px;
     padding: 0.6rem 0.6rem 0.6rem 1.1rem;
-    transition: border-color 0.5s ease, box-shadow 0.5s ease;
+    transition: border-color 0.4s ease, border-width 0.2s ease;
     box-shadow: 0 1px 12px #00000030;
   }
 
   .chat-window:focus-within {
-    border-color: #4a3418;
-    box-shadow: 0 2px 20px #bf6e220a, 0 1px 8px #00000040;
+    border: 2.5px solid var(--cobre);
+    box-shadow: none;
   }
 
   textarea {
@@ -481,7 +481,7 @@
     color: var(--crema-2);
     line-height: 28px;
     padding: 0 0 1.25rem;
-    border-bottom: 1px solid #2e2416;
+    border-bottom: 1px solid #201810;
     margin-bottom: 1.25rem;
     background: repeating-linear-gradient(
       to bottom,
@@ -612,8 +612,9 @@
     background: var(--cobre);
     border-radius: 1px;
     flex-shrink: 0;
-    align-self: flex-start;
-    margin-top: 3px;
+    align-self: center;
+    margin-left: 0.1rem;
+    order: -1;
     animation: cursor-blink 1.05s ease-in-out infinite;
   }
 
@@ -1413,7 +1414,6 @@
         rows="1"
       ></textarea>
       <span class="cursor-falso" id="cursor-falso"></span>
-      <span class="cursor-onboarding" id="cursor-onboarding"></span>
       <div class="chat-acciones">
         <button class="enviar" id="btn-enviar" disabled aria-label="enviar">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1656,14 +1656,8 @@ const textarea = document.getElementById('post-input');
 const btnEnviar = document.getElementById('btn-enviar');
 const charCount = document.getElementById('char-count'); // puede ser null
 const cursorFalso = document.getElementById('cursor-falso');
-const cursorOnboarding = document.getElementById('cursor-onboarding');
-
-function ocultarCursorOnboarding() {
-  if (cursorOnboarding) cursorOnboarding.style.display = 'none';
-}
 
 textarea.addEventListener('focus', () => {
-  ocultarCursorOnboarding();
   if (cursorFalso && textarea.value.length === 0) {
     cursorFalso.style.display = '';
     textarea.classList.add('sin-caret');
@@ -1679,8 +1673,6 @@ textarea.addEventListener('input', () => {
   const len = textarea.value.length;
   if (charCount) charCount.textContent = len > 0 ? `${len} / 1000` : '';
   btnEnviar.disabled = len < 3 || estado.cargando;
-
-  ocultarCursorOnboarding();
 
   // Ocultar cursor falso cuando hay texto
   if (cursorFalso) cursorFalso.style.display = len > 0 ? 'none' : '';
@@ -1865,6 +1857,12 @@ async function enviar() {
     skeletonEl.remove();
 
     const entradaVisible = crearEntrada(texto, entradaId);
+
+    // Si el usuario invocó a Oscar directamente, forzar su aparición
+    if (/oscar/i.test(texto)) {
+      parsed.oscar = true;
+      parsed.oscar_primero = false;
+    }
 
     // Oscar primero — entra antes que Anita ocasionalmente
     if (estado.oscarActivo && parsed.oscar && parsed.oscar_primero) {
