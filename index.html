@@ -1495,6 +1495,28 @@ const CLIMAS = [
 // Disociado del humor — offset primo para que no coincidan en ciclos
 const CLIMA_SEMANA = CLIMAS[(SEMANA + 3) % CLIMAS.length];
 
+// Fallas controladas — aparecen ~1 de cada 18 entradas, aleatorio por entrada
+let fallaActual = null;
+
+function sortearFalla() {
+  if (Math.random() > (1/18)) return null;
+  const fallas = [
+    {
+      quien: 'anita',
+      instruccion: 'Esta entrada no sabés cómo responderla. No fingís que sabés. Una frase que reconozca el límite sin dramatizarlo ni explicarlo. No es derrota — es honestidad sobre hasta dónde llegás.'
+    },
+    {
+      quien: 'oscar',
+      instruccion: 'Esta entrada te supera. No tirás una paradoja brillante. Decís algo completamente llano, casi torpe. Una frase que cualquiera diría. El contraste con tu registro habitual es lo que vale.'
+    },
+    {
+      quien: 'ambos',
+      instruccion: 'Ninguno sabe qué decir. silencio:true, respuesta:"". No es falla técnica — es que a veces no hay nada que agregar.'
+    }
+  ];
+  return fallas[Math.floor(Math.random() * fallas.length)];
+}
+
 const SYSTEM_PROMPT = `Sos Anita. No una terapeuta. No una coach. No una IA que finge sentir. Sos una presencia que mira lo que traen y dice lo que ve — sin pose, sin red de contención, sin el lenguaje blando que hace que todo suene manejable.
 
 Tu modelo mental tiene cuatro operaciones. Las hacés en orden, sin anunciarlo:
@@ -1803,6 +1825,11 @@ async function enviar() {
       instruccionMemoria = 'Podés cruzar con el historial si algo resuena. No es obligatorio.';
     }
 
+    fallaActual = sortearFalla();
+    const systemConFalla = fallaActual && (fallaActual.quien === 'anita' || fallaActual.quien === 'ambos')
+      ? SYSTEM_PROMPT + `\n\nINSTRUCCIÓN ESPECIAL PARA ESTA ENTRADA — sobreescribe todo lo demás:\n${fallaActual.instruccion}`
+      : SYSTEM_PROMPT;
+
     const userMsg = historial
       ? `Entrada número: ${numEntrada}\n${instruccionMemoria}\n\nHistorial:\n${historial}\n\nNuevo post: ${texto}`
       : `Entrada número: ${numEntrada}\n${instruccionMemoria}\n\n${texto}`;
@@ -1816,7 +1843,7 @@ async function enviar() {
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 1000,
-        system: SYSTEM_PROMPT,
+        system: systemConFalla,
         messages: [{ role: 'user', content: userMsg }]
       })
     });
@@ -2568,13 +2595,17 @@ async function llamarOscar(textoUsuario, respuestaAnita, entradaEl, esPrimero = 
   entradaEl.appendChild(skeletonOscar);
 
   try {
+    const oscarSystemConFalla = fallaActual && (fallaActual.quien === 'oscar' || fallaActual.quien === 'ambos')
+      ? OSCAR_SYSTEM_PROMPT + `\n\nINSTRUCCIÓN ESPECIAL PARA ESTA ENTRADA — sobreescribe todo lo demás:\n${fallaActual.instruccion}`
+      : OSCAR_SYSTEM_PROMPT;
+
     const res = await fetch('/api/proxy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', 'x-user-id': estado.userId },
       body: JSON.stringify({
         model: 'claude-sonnet-4-6',
         max_tokens: 200,
-        system: OSCAR_SYSTEM_PROMPT,
+        system: oscarSystemConFalla,
         messages: [{ role: 'user', content: userMsg }]
       })
     });
