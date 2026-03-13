@@ -1639,11 +1639,82 @@ window.addEventListener('load', () => {
     rotateMood();
     setInterval(rotateMood, 8000);
     actualizarEstadoPro();
-    cargarPostsGuardados();
+    // Supabase — sincronizar usuario y bajar entradas
+    sincronizarUsuario().then(() => {
+      bajarEntradas().then(() => {
+        cargarPostsGuardados();
+      });
+    });
   } catch(e) {
     console.error('init error:', e);
   }
 });
+
+// ── SUPABASE VIA PROXY ──
+async function proxyData(action, body = {}) {
+  try {
+    const res = await fetch('/api/proxy', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-user-id': estado.userId,
+        'x-action': action,
+      },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch { return null; }
+}
+
+async function sincronizarUsuario() {
+  const usuario = await proxyData('sync-usuario');
+  if (usuario && usuario.pro) {
+    estado.pro = true;
+    localStorage.setItem('anita-pro', 'true');
+    actualizarEstadoPro();
+  }
+}
+
+async function subirEntrada(entrada) {
+  await proxyData('guardar-entrada', {
+    texto: entrada.texto || '',
+    respuesta: entrada.respuesta || null,
+    oscar_respuesta: entrada.oscar_respuesta || null,
+    tono: entrada.tono || null,
+    hook: entrada.hook || null,
+    pregunta: entrada.pregunta || null,
+    tema_interno: entrada.tema_interno || null,
+    silencio: entrada.silencio || false,
+    sin_respuesta: entrada.sin_respuesta || false,
+    created_at: entrada.fecha || new Date().toISOString(),
+  });
+}
+
+async function bajarEntradas() {
+  const entradas = await proxyData('get-entradas', { limite: 20 });
+  if (!entradas || entradas.length === 0) return;
+  // Merge con localStorage — Supabase tiene prioridad
+  const local = estado.posts || [];
+  const remoto = entradas.map(e => ({
+    texto: e.texto,
+    respuesta: e.respuesta,
+    oscar_respuesta: e.oscar_respuesta,
+    tono: e.tono,
+    hook: e.hook,
+    pregunta: e.pregunta,
+    tema_interno: e.tema_interno,
+    silencio: e.silencio,
+    sin_respuesta: e.sin_respuesta,
+    fecha: e.created_at,
+  })).reverse(); // más viejas primero
+  // Si hay más entradas remotas que locales, usar remoto
+  if (remoto.length >= local.length) {
+    estado.posts = remoto;
+    localStorage.setItem('anita-posts', JSON.stringify(remoto));
+  }
+}
+
 
 function cargarPostsGuardados() {
   try {
@@ -1873,11 +1944,14 @@ async function enviar() {
     ocultarToast();
 
     // Guardar en estado
-    estado.posts.push({ texto, respuesta: parsed.respuesta, fecha: new Date().toISOString() });
+    const entradaNueva = { texto, respuesta: parsed.respuesta, tono: parsed.tono, hook: parsed.hook, pregunta: parsed.pregunta, tema_interno: parsed.tema_interno, silencio: parsed.silencio || false, fecha: new Date().toISOString() };
+    estado.posts.push(entradaNueva);
     estado.totalPosts++;
     localStorage.setItem('anita-total', estado.totalPosts.toString());
     localStorage.setItem('anita-posts', JSON.stringify(estado.posts));
     actualizarEstadoPro();
+    // Subir a Supabase en segundo plano
+    subirEntrada(entradaNueva);
 
 
     // Pedir permiso push después de la primera respuesta
@@ -2623,6 +2697,8 @@ async function llamarOscar(textoUsuario, respuestaAnita, entradaEl, esPrimero = 
       if (estado.posts.length > 0) {
         estado.posts[estado.posts.length - 1].oscar_respuesta = textoOscar;
         localStorage.setItem('anita-posts', JSON.stringify(estado.posts));
+        // Subir actualización a Supabase
+        subirEntrada(estado.posts[estado.posts.length - 1]);
       }
 
       // Mostrar con delay — Oscar llega después de Anita
