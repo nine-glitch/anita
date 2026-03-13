@@ -1343,7 +1343,7 @@
           </li>
         </ul>
         <div class="pro-panel-precio">$4.99 / mes</div>
-        <a class="paywall-btn" href="https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a" target="_blank">activar mesa chica pro</a>
+        <a class="paywall-btn lemon-link" href="#" target="_blank">activar mesa chica pro</a>
         <div class="paywall-codigo" style="margin-top:1rem">
           <input type="text" id="codigo-pro-panel" placeholder="tengo un código" autocomplete="off">
           <button id="btn-codigo-panel">activar</button>
@@ -1372,7 +1372,7 @@
 
   <div class="banner-pro" id="banner-pro">
     <span>usaste <span id="contador-posts">0</span> de 8 entradas. después, mesa chica pro.</span>
-    <a href="https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a" target="_blank">activar mesa chica pro →</a>
+    <a class="lemon-link" href="#" target="_blank">activar mesa chica pro →</a>
   </div>
 
   <div class="paywall-overlay" id="paywall-overlay">
@@ -1382,7 +1382,7 @@
       <div class="paywall-divisor"></div>
       <p class="paywall-texto" id="paywall-subtexto">entradas ilimitadas. memoria completa. las voces sin límite.</p>
       <p class="paywall-precio">$4.99 / mes</p>
-      <a class="paywall-btn" href="https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a" target="_blank">continuar con mesa chica pro</a>
+      <a class="paywall-btn lemon-link" href="#" target="_blank">continuar con mesa chica pro</a>
       <button class="paywall-cerrar-link" id="paywall-cerrar">no por ahora</button>
       <button class="paywall-cerrar-link" id="toggle-codigo" style="margin-top:0.25rem;color:var(--gris-claro)">tengo un código</button>
       <div class="paywall-codigo" id="paywall-codigo-area" style="display:none">
@@ -1447,7 +1447,6 @@
 <script>
 // ── ESTADO ──
 const LIMITE_FREE = 8;
-const LEMON_URL = 'https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a';
 
 const estado = {
   posts: [],
@@ -1468,6 +1467,9 @@ const estado = {
 // totalPosts siempre refleja el largo real del array
 estado.totalPosts = estado.posts.length;
 localStorage.setItem('anita-total', estado.totalPosts.toString());
+
+const LEMON_URL = `https://umbilical.lemonsqueezy.com/checkout/buy/21889c95-2552-453e-b0aa-89e04812282a?checkout[custom][user_id]=${estado.userId}`;
+document.querySelectorAll('.lemon-link').forEach(a => a.href = LEMON_URL);
 
 // Humor semanal — cambia cada lunes
 const SEMANA = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
@@ -1585,8 +1587,8 @@ Respondé SOLO en JSON válido, sin backticks, sin texto fuera del JSON:
   "pregunta": null,
   "tema_interno": "una palabra",
   "silencio": false,
-  "oscar": true o false — true en 1 de cada 3 entradas. Entra cuando: hay una paradoja que vos no tocaste, algo que resolviste demasiado rápido, una contradicción entre lo que la persona dice y cómo lo dice, o cuando tu respuesta cierra algo que merecía quedarse abierto.,
-  "oscar_primero": true o false — true ocasionalmente (1 de cada 8 o 10 entradas) cuando oscar debe entrar antes que tu respuesta. Solo cuando oscar:true.
+  "oscar": true o false — el sistema decide cuándo aparece Oscar, pero vos podés marcarlo true cuando algo genuinamente lo merece: una paradoja que no tocaste, algo que resolviste demasiado rápido, una contradicción entre lo que dice y cómo lo dice.,
+  "oscar_primero": true o false — true cuando oscar debería entrar antes que vos. Solo cuando oscar:true. Raramente.
 }` 
 
 
@@ -1969,16 +1971,35 @@ async function enviar() {
 
     const entradaVisible = crearEntrada(texto, entradaId);
 
-    // Si el usuario invocó a Oscar directamente, forzar su aparición
+    // Si el usuario invocó a Oscar directamente, forzar aparición normal
     if (/oscar/i.test(texto)) {
       parsed.oscar = true;
       parsed.oscar_primero = false;
-    }
-
-    // Probabilidad mixta — si Anita no lo llamó, igual hay 20% de chance
-    if (!parsed.oscar && Math.random() < 0.20) {
-      parsed.oscar = true;
-      parsed.oscar_primero = false;
+    } else {
+      // Distribución controlada con un dado único:
+      // 55% Anita sola
+      // 28% Anita → Oscar
+      // 10% Oscar → Anita (oscar_primero)
+      //  7% Oscar solo (sin respuesta de Anita visible)
+      const dado = Math.random();
+      if (dado < 0.55) {
+        // Anita sola — respetar lo que Anita decidió
+        parsed.oscar = false;
+      } else if (dado < 0.83) {
+        // Anita → Oscar (28%)
+        parsed.oscar = true;
+        parsed.oscar_primero = false;
+      } else if (dado < 0.93) {
+        // Oscar → Anita (10%)
+        parsed.oscar = true;
+        parsed.oscar_primero = true;
+      } else {
+        // Oscar solo (7%) — Anita responde en silencio puro
+        parsed.oscar = true;
+        parsed.oscar_primero = false;
+        parsed.silencio = true;
+        parsed.respuesta = '';
+      }
     }
 
     // Oscar primero — entra antes que Anita ocasionalmente
@@ -2245,7 +2266,7 @@ document.getElementById('toggle-codigo').addEventListener('click', () => {
 // Código de activación manual
 document.getElementById('btn-codigo').addEventListener('click', () => {
   const codigo = document.getElementById('codigo-pro').value.trim().toUpperCase();
-  const CODIGOS_VALIDOS = ['ANITA2025', 'PROLAURA', 'AMIGA']; // cambiá estos
+  const CODIGOS_VALIDOS = ['ANITA2025', 'PROLAURA', 'AMIGA', 'TERTULIA']; // cambiá estos
   if (CODIGOS_VALIDOS.includes(codigo)) {
     estado.pro = true;
     localStorage.setItem('anita-pro', 'true');
@@ -2391,7 +2412,7 @@ document.getElementById('pro-panel').addEventListener('click', e => {
 
 document.getElementById('btn-codigo-panel').addEventListener('click', () => {
   const codigo = document.getElementById('codigo-pro-panel').value.trim().toUpperCase();
-  const CODIGOS_VALIDOS = ['ANITA2025', 'PROLAURA', 'AMIGA'];
+  const CODIGOS_VALIDOS = ['ANITA2025', 'PROLAURA', 'AMIGA', 'TERTULIA'];
   if (CODIGOS_VALIDOS.includes(codigo)) {
     estado.pro = true;
     localStorage.setItem('anita-pro', 'true');
