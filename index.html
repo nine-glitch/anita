@@ -520,7 +520,7 @@
     color: var(--cobre);
     letter-spacing: 0.18em;
     text-transform: uppercase;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.3rem;
     opacity: 0.8;
   }
 
@@ -572,16 +572,17 @@
   }
 
   .skeleton-linea {
-    height: 1em;
-    background: linear-gradient(90deg, var(--blanco-2) 25%, var(--blanco) 50%, var(--blanco-2) 75%);
+    height: 0.7em;
+    background: linear-gradient(90deg, #2a2018 25%, #352a1c 50%, #2a2018 75%);
     background-size: 200% 100%;
-    animation: shimmer 1.5s infinite;
+    animation: shimmer 1.8s ease infinite;
     border-radius: 2px;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.6rem;
+    opacity: 0.7;
   }
 
-  .skeleton-linea:nth-child(1) { width: 80%; }
-  .skeleton-linea:nth-child(2) { width: 60%; }
+  .skeleton-linea:nth-child(1) { width: 75%; }
+  .skeleton-linea:nth-child(2) { width: 50%; }
 
   @keyframes shimmer {
     0% { background-position: 200% 0; }
@@ -602,17 +603,18 @@
   }
 
   .onboarding-cursor {
-    width: 1.5px;
-    height: 1.2em;
-    background: var(--cobre);
-    border-radius: 1px;
-    margin: 2rem auto 0;
-    opacity: 0;
-    animation: onboarding-aparecer 0.8s ease forwards 1s, cursor-blink 1.05s ease-in-out infinite 1.8s;
+    display: none;
   }
 
-  @keyframes onboarding-aparecer {
-    to { opacity: 1; }
+  .cursor-onboarding {
+    width: 1.5px;
+    height: 1.1em;
+    background: var(--cobre);
+    border-radius: 1px;
+    flex-shrink: 0;
+    align-self: flex-start;
+    margin-top: 3px;
+    animation: cursor-blink 1.05s ease-in-out infinite;
   }
 
   /* ── TOAST ── */
@@ -924,7 +926,7 @@
 
   /* ── SEPARADOR ENTRE ENTRADAS — línea de ceniza ── */
   .entrada + .entrada {
-    border-top: 1px solid #1e1912;
+    border-top: 1px solid #1a1510;
     padding-top: 2rem;
     margin-top: 0.5rem;
   }
@@ -1411,6 +1413,7 @@
         rows="1"
       ></textarea>
       <span class="cursor-falso" id="cursor-falso"></span>
+      <span class="cursor-onboarding" id="cursor-onboarding"></span>
       <div class="chat-acciones">
         <button class="enviar" id="btn-enviar" disabled aria-label="enviar">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
@@ -1435,7 +1438,6 @@
     <div class="estado-vacio" id="estado-vacio">
       <p>la mesa está puesta. <span style="color:var(--cobre);font-style:normal;">la tertulia empieza cuando vos querés.</span></p>
       <p style="font-family:'DM Mono',monospace;font-size:0.6rem;color:var(--gris-claro);letter-spacing:0.08em;margin-top:0.5rem;">lo que traés acá es tuyo. nadie más lo ve.</p>
-      <div class="onboarding-cursor" id="onboarding-cursor"></div>
     </div>
   </div>
 </div>
@@ -1654,8 +1656,14 @@ const textarea = document.getElementById('post-input');
 const btnEnviar = document.getElementById('btn-enviar');
 const charCount = document.getElementById('char-count'); // puede ser null
 const cursorFalso = document.getElementById('cursor-falso');
+const cursorOnboarding = document.getElementById('cursor-onboarding');
+
+function ocultarCursorOnboarding() {
+  if (cursorOnboarding) cursorOnboarding.style.display = 'none';
+}
 
 textarea.addEventListener('focus', () => {
+  ocultarCursorOnboarding();
   if (cursorFalso && textarea.value.length === 0) {
     cursorFalso.style.display = '';
     textarea.classList.add('sin-caret');
@@ -1671,6 +1679,8 @@ textarea.addEventListener('input', () => {
   const len = textarea.value.length;
   if (charCount) charCount.textContent = len > 0 ? `${len} / 1000` : '';
   btnEnviar.disabled = len < 3 || estado.cargando;
+
+  ocultarCursorOnboarding();
 
   // Ocultar cursor falso cuando hay texto
   if (cursorFalso) cursorFalso.style.display = len > 0 ? 'none' : '';
