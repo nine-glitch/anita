@@ -1460,12 +1460,14 @@ const estado = {
     return id;
   })(),
   pro: localStorage.getItem('anita-pro') === 'true',
-  totalPosts: parseInt(localStorage.getItem('anita-total') || '0'),
   posts: (() => {
     try { return JSON.parse(localStorage.getItem('anita-posts') || '[]'); }
     catch { return []; }
   })()
 };
+// totalPosts siempre refleja el largo real del array
+estado.totalPosts = estado.posts.length;
+localStorage.setItem('anita-total', estado.totalPosts.toString());
 
 // Humor semanal — cambia cada lunes
 const SEMANA = Math.floor(Date.now() / (7 * 24 * 60 * 60 * 1000));
