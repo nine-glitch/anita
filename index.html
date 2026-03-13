@@ -1869,6 +1869,12 @@ async function enviar() {
       parsed.oscar_primero = false;
     }
 
+    // Probabilidad mixta — si Anita no lo llamó, igual hay 20% de chance
+    if (!parsed.oscar && Math.random() < 0.20) {
+      parsed.oscar = true;
+      parsed.oscar_primero = false;
+    }
+
     // Oscar primero — entra antes que Anita ocasionalmente
     if (estado.oscarActivo && parsed.oscar && parsed.oscar_primero) {
       await llamarOscar(texto, parsed.respuesta, entradaVisible, true);
@@ -1899,11 +1905,6 @@ async function enviar() {
 
     // Actualizar mood según tono
     actualizarMoodPorTono(parsed.tono || 'filoso');
-
-    // Oscar — llamada separada cuando Anita decide que aparece
-    if (estado.oscarActivo && parsed.oscar) {
-      llamarOscar(texto, parsed.respuesta, entradaVisible);
-    }
 
   } catch (err) {
     clearTimeout(toastTimer);
